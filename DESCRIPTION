@@ -1,0 +1,18 @@
+Package: eyelines_online
+Type: Package
+Title: Eyelines Online
+Version: 0.0.1
+Date: 2016-02-01
+Author: Nastya Fedorova
+Maintainer: Nastya Fedorova <mayenok@gmail.com>
+Description: Online data processing for eyelines game with Resonance
+License: GPL
+Suggests:
+    testthat, knitr
+Imports:
+    Resonance,
+    hybridEyeEEG,
+    rjson,
+    pracma,
+    sperrorest,
+    R.matlab
