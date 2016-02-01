@@ -11,8 +11,8 @@ buildClassifier <- function(path, fixation_threshold=800, epoch_size=400,
                             low=0.1, high=30, bsln_start = 200, bsln_end = 300)
   {
   #@todo: move magick numbers to arguments
-  l <- eye_loaddata(path, fixation_threshold, epoch_size, left_border, 500,
+  l <- load_eye_data(path, fixation_threshold, epoch_size, left_border, 500,
                     channels, A1,A2, low, high)
   
-  read.par.mat(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border)
+  parse_mat_file(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border)
 }

@@ -1,7 +1,10 @@
-read.par.mat <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start, bsln_end, left_border)
+parse_mat_file <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
+                         bsln_end, left_border)
 {  
   
-  params <- eye_train(l$eegT, l$eegNT, l$fixationDuration, l$sRate, l$path, l$epoch_size, A1_ch, A2_ch, bsln_start, bsln_end, left_border, high)
+  params <- train_classifier(l$eegT, l$eegNT, l$fixationDuration, l$sRate,
+                      l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
+                      bsln_end, left_border, high)
   
   W <- as.numeric(params$W)
   th <- as.numeric(params$th)

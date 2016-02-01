@@ -1,4 +1,4 @@
-eye_loaddata <- function(path, fixation_threshold, epoch_size, left_border,
+load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
                          sRate, channels, A1,A2, low, high)
 {
   

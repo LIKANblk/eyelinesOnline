@@ -1,4 +1,4 @@
-eye_train <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_size, A1_ch, A2_ch, bsln_start, bsln_end, left_border, high)
+train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_size, A1_ch, A2_ch, bsln_start, bsln_end, left_border, high)
 {
   
   library(pracma)
@@ -52,7 +52,7 @@ eye_train <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_size, A1
   ufeats[,1] <- as.numeric(tmp[[1]])
   ufeats[,2] <- as.numeric(tmp[[2]])
   
-  pars <- eye_train1(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
+  pars <- get_params(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
   
   
   cat('Number of features: ', dim(ufeats)[1], '\n')

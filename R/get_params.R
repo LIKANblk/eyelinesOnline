@@ -1,4 +1,4 @@
-eye_train1 <- function(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
+get_params <- function(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
 {
   library(sperrorest)
   
