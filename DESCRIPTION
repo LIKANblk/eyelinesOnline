@@ -7,8 +7,6 @@ Author: Nastya Fedorova
 Maintainer: Nastya Fedorova <mayenok@gmail.com>
 Description: Online data processing for eyelines game with Resonance
 License: GPL
-Suggests:
-    testthat, knitr
 Imports:
     Resonance,
     hybridEyeEEG,

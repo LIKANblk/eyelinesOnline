@@ -3,5 +3,4 @@ import(hybridEyeEEG)
 import(rjson)
 import(pracma)
 import(sperrorest)
-import(R.matlab
-
+import(R.matlab)
