@@ -1,3 +1,4 @@
+exportPattern("^[[:alpha:]]+")
 import(Resonance)
 import(hybridEyeEEG)
 import(rjson)

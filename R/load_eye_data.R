@@ -10,7 +10,7 @@ load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
   eegT = c()
   eegNT = c()
   
-  sink(sprintf("%soutput_%sHz.txt",path, high, high))
+#   sink(sprintf("%soutput_%sHz.txt",path, high, high))
   
   for (i in 1:length(json$'valid files'))
   {

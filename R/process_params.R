@@ -1,4 +1,4 @@
-parse_mat_file <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
+process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
                          bsln_end, left_border)
 {  
   
