@@ -50,8 +50,8 @@ load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
 
 load.eeg <- function(file, channels, low, high, refs){
   
-  # raw <- Resonance:::R2EReadChannel(file = file, "EEG")
-  raw <- readMat(paste0(file, ".raw.mat"))$raw
+  raw <- R3:::extractChannel(file, 0)
+  #raw <- readMat(paste0(file, ".raw.mat"))$raw
   
   
   RM <- diag(nrow=33)[channels,]

@@ -13,4 +13,5 @@ Imports:
     rjson,
     pracma,
     sperrorest,
-    R.matlab
+    R.matlab,
+    R3
