@@ -7,15 +7,17 @@ Author: Nastya Fedorova
 Maintainer: Nastya Fedorova <mayenok@gmail.com>
 Description: Online data processing for eyelines game with Resonance
 License: GPL
-Depends:
-    Resonance,
-    hybridEyeEEG,
-    rjson,
-    pracma,
-    sperrorest
 Imports:
     Resonance,
     hybridEyeEEG,
     rjson,
     pracma,
-    sperrorest
+    sperrorest,
+    R3
+Depends:
+    Resonance,
+    hybridEyeEEG,
+    rjson,
+    pracma,
+    sperrorest,
+    R3

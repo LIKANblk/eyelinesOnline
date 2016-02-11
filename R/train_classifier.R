@@ -9,8 +9,8 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
   eegNTp_before_dec <- array(dim = c(dim(eegNT)[1], dim(eegNT)[2], dim(eegNT)[3]))
   
   left_border <- left_border / 1000 * sRate
-  bsln_start <- (bsln_start / 1000 * sRate) - left_border
-  bsln_end <- (bsln_end / 1000 * sRate) - left_border
+  bsln_start <- bsln_start / 1000 * sRate - left_border
+  bsln_end <- bsln_end / 1000 * sRate - left_border
   
   
   bsln_start = max(bsln_start, 1)
@@ -47,7 +47,8 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
   ufeats[,2] <- as.numeric(tmp[[2]])
   
   pars <- get_params(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
-  
+  pars$params$bsln_start <- bsln_start
+  pars$params$bsln_end <- bsln_end
   
   cat('Number of features: ', dim(ufeats)[1], '\n')
   cat('Train:', '\n')

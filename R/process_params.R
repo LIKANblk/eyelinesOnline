@@ -16,8 +16,8 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
   
   t <- fixDur / 1000 * sRate
   
-  bsln_start <- (bsln_start / 1000 * l$sRate) - left_border
-  bsln_end <- (bsln_end / 1000 * l$sRate) - left_border
+  bsln_start <- as.numeric(params$bsln_start)
+  bsln_end <- as.numeric(params$bsln_end)
   
   
   list(W=W, th=th, ufeats=ufeats, channels=channels, low=low, high=high, A1=A1, A2=A2, fixDur=fixDur, sRate=sRate,
