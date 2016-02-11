@@ -32,12 +32,6 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
     eegNTp_before_dec[ , , i] <- l$before_dec    
   }
   
-  
-  writeMat(sprintf("%sT_%sHz.mat", path, high, high), eegTp = eegTp)
-  writeMat(sprintf("%sT_before_dec_%sHz.mat", path, high, high), eegTp_before_dec = eegTp_before_dec)
-  writeMat(sprintf("%sNT_%sHz.mat", path, high, high), eegNTp = eegNTp)
-  writeMat(sprintf("%sNT_before_dec_%sHz.mat", path, high, high), eegNTp_before_dec = eegNTp_before_dec)
-  
   spec_sens <- eye_1Dfeats(eegTp, eegNTp)
   
   Nf <- 110

@@ -1,6 +1,5 @@
 
 require(Resonance)
-require(R.matlab)
 require(eyelinesOnline)
 require(hybridEyeEEG)
 
