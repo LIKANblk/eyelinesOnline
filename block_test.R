@@ -1,8 +1,31 @@
+library(Resonance)
+library(R3)
+library(Resonate)
+
+file = 'd:/YandexDisk/eyelinesOnline/data/test-2/06.r2e'
+blocks <- blockLevelRead(file)
+
+eegBlocks <- Filter(function(b){
+  if(!inherits(b, "DataBlock")) return(F)
+  if(attr(b, 'stream')!=0) return(F)
+  TRUE
+}, blocks)
+
+clickBlocks <- Filter(function(b){
+  if(!inherits(b, "DataBlock")) return(F)
+  if(attr(b, 'stream')!=1) return(F)
+  TRUE
+}, blocks)
+
+
+
+########################
+
+code <- "
 
 require(Resonance)
-require(eyelinesOnline)
-require(hybridEyeEEG)
-
+library(Resonate)
+library(eyelinesOnline)
 
 W = c(0.0529078707683507, 0.044014761636564, 0.167599364672095, 
       0.0759448946162227, -0.0173479141391115, -0.114834810452548, 
@@ -40,42 +63,55 @@ fixDur = 500
 sRate = 500
 t = 250
 bsln_start = 1
-bsln_end = 2
+bsln_end = 50
+
+process = function(){
+  RM <- diag(nrow=33)[channels,]
+  #   FS <- pipeline(
+  #     input(1),
+  #     signalPreparation(, low=low, high=high, notch=50),
+  #     pipe.spatial(, RM),
+  #     pipe.references(, c(A1,A2))
+  #   )
+  
+  FS1 <- signalPreparation(input(1), low=low, high=high, notch=50)
+  FS2 <- pipe.spatial(FS1, RM)
+  FS <- pipe.references(FS2, c(A1,A2))
+  
+  RA1 <- pipe.decimate(FS, 1, 20 , coef_10000_to_500)
+  ev <- input(2)
+  RA2 <- cross.windowizeByEvents(RA1, ev, t/20, shift=-t/20)
+  RA3 <- pipe.medianWindow(RA2, 1, 12)
+  RA4 <- pipe.trof.classifier(RA3, W, th, ufeats )
+   createOutput(RA4,'RES')
+}
+"
+
+########################
+
+A <- matrix(ncol=33,nrow=0)
+SI(A) <- SI.channels(channels = 33, samplingRate = 500)
+SI(A, 'online') <- T
+B <- list()
+SI(B) <- SI.event()
+SI(B, 'online') <- T
+
+onPrepare(list(A,B), code)
 
 
-
-file = 'd:/YandexDisk/eyelinesOnline/data/test-2/02.r2e'
-signal <- R3::extractChannel(file,0)
-sync_marks <- which( diff(signal[,ncol(signal)])>0 )
-signal <- signal[(sync_marks[3]+1):nrow(signal), ]
-
-actions <- extract.actions('d:/YandexDisk/eyelinesOnline/data/test-2/24253292')
-msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*1E6)
-msgev <- rep("GFY", length(msgbuttonPressed_t))
-
-input1 <- source.channels(signal, samplingRate=500)
-input2 <- source.events(msgev, msgbuttonPressed_t)
-
-input <- function(x){
-  if(x==1){ input1 }else{ input2 }
+nextEeg <- function(b){
+  onDataBlock.double(id = 1, vector = t(b), samples = nrow(b), timestamp = attr(b, 'created'))
 }
 
-#eval(applyClassifier)
+nextClick <- function(b){
+  onDataBlock.message(id = 2, msg = as.character(b), timestamp = attr(b, 'created'))
+}
 
+nextBlock <- function(b){
+  if(!inherits(b, "DataBlock")) return()
+  if(attr(b, 'stream')==0) nextEeg(b) else nextClick(b)
+}
 
-RM <- diag(nrow=33)[channels,]
-FS <- pipeline(
-  input(1),
-  signalPreparation(, low=low, high=high, notch=50),
-  pipe.spatial(, RM),
-  pipe.references(, c(A1,A2))
-)
-#createOutput('niceEEG', FS)
+lapply(blocks, nextBlock)
 
-
-RA1 <- pipe.decimate(FS, 1, 20 , coef_10000_to_500)
-ev <- input(2)
-RA2 <- cross.windowizeByEvents(RA1, ev, t/20, shift=-t/20)
-RA3 <- pipe.medianWindow(RA2, 1, 12)
-RA4 <- pipe.trof.classifier(RA3, W, th, ufeats )
-#createOutput(RES,'RES')
+Q <- popQueue()
