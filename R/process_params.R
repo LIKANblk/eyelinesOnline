@@ -110,9 +110,11 @@ pipe.trof.classifier <- function(input, W, th, ufeats)
         }
         Q = X %*% W
         
-        ret <- ( Q < th )
-        attr(ret, 'TS') <- attr(db, 'TS')
-        ret
+        if(Q < th ){
+          attr(db, 'byEvent')
+        } else {
+          NULL
+        }
       })
     }
   )
