@@ -39,12 +39,12 @@ bsln_end = 2
 
 
 
-file = 'd:/YandexDisk/eyelinesOnline/data/test-3/06.r2e'
+file = '/home/mayenok/Yandex.Disk/eyelinesOnline/data/test-3/06.r2e'
 signal <- R3::extractChannel(file,0)
 sync_marks <- which( diff(signal[,ncol(signal)])>0 )
 signal <- signal[(sync_marks[3]+1):nrow(signal), ]
 
-actions <- extract.actions('d:/YandexDisk/eyelinesOnline/data/test-3/24261882')
+actions <- extract.actions('/home/mayenok/Yandex.Disk/eyelinesOnline/data/test-3/24261882')
 
 msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*1E6)
 msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*1E6)
