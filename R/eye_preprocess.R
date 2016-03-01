@@ -20,22 +20,24 @@ eye_preprocess <- function(eeg, bsln_start, bsln_end)
   mean_baseline <- colMeans(eeg[bsln_start:bsln_end, ])
   e1 <- t(apply(eeg, 1, function(x) x - mean_baseline))
   before_dec <- e1 
-  eeg <- e1
+  eeg_baseline_corrected <- e1
   
   
-  # smoothing
-  dec_n <- 20;
-  samples_in_epoch <- dim(eeg)[1]
-  e1 <- matrix(nrow = samples_in_epoch/dec_n, ncol = nChannels)
+#   # smoothing
+#   dec_n <- 20;
+#   samples_in_epoch <- dim(eeg)[1]
+#   e1 <- matrix(nrow = samples_in_epoch/dec_n, ncol = nChannels)
+#   
+#   for (i in 1:nChannels)
+#   {
+#     e1[ , i] <- decimate(eeg[ , i], dec_n)
+#   }
+#   
+#   eeg <- e1
   
-  for (i in 1:nChannels)
-  {
-    e1[ , i] <- decimate(eeg[ , i], dec_n)
-  }
-  
-  eeg <- e1
-  
-  l <- list(eeg = eeg, before_dec = before_dec)
+#   l <- list(eeg = eeg, before_dec = before_dec)
+
+eeg_baseline_corrected
   
 }
 

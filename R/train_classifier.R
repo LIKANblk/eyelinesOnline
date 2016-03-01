@@ -7,11 +7,9 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
   eegNTp <- array(dim = c(dim(eegNT)[1]/20, dim(eegNT)[2], dim(eegNT)[3]))
   eegTp_before_dec <- array(dim = c(dim(eegT)[1], dim(eegT)[2], dim(eegT)[3]))
   eegNTp_before_dec <- array(dim = c(dim(eegNT)[1], dim(eegNT)[2], dim(eegNT)[3]))
-  
-  left_border <- left_border / 1000 * sRate
-  bsln_start <- (bsln_start / 1000 * sRate) - left_border
-  bsln_end <- (bsln_end / 1000 * sRate) - left_border
-  
+    
+  bsln_start = (bsln_start - left_border) / 1000 * sRate;
+  bsln_end = (bsln_end - left_border) / 1000 * sRate;
   
   bsln_start = max(bsln_start, 1)
   bsln_end = min(bsln_end, dim(eegT)[1])
@@ -19,17 +17,15 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
   
   for (i in 1:dim(eegT)[3])
   {
-    l <- eye_preprocess(eegT[,,i], bsln_start, bsln_end)
-    eegTp[ , , i] <- l$eeg
-    eegTp_before_dec[ , , i] <- l$before_dec
+    eeg_baseline_corrected <- eye_preprocess(eegT[,,i], bsln_start, bsln_end)
+    eegTp[ , , i] <- eeg_baseline_corrected
   }
   
   
   for (i in 1:dim(eegNT)[3])
   {
-    l <- eye_preprocess(eegNT[,,i], bsln_start, bsln_end)
-    eegNTp[ , , i] <- l$eeg
-    eegNTp_before_dec[ , , i] <- l$before_dec    
+    eeg_baseline_corrected <- eye_preprocess(eegNT[,,i], bsln_start, bsln_end)
+    eegNTp[ , , i] <- eeg_baseline_corrected
   }
   
   spec_sens <- eye_1Dfeats(eegTp, eegNTp)
