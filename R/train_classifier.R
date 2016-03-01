@@ -1,17 +1,13 @@
 train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_size, A1_ch, A2_ch, bsln_start, bsln_end, left_border, high)
 {
   
-  library(pracma)
-
-  eegTp <- array(dim = c(dim(eegT)[1]/20, dim(eegT)[2], dim(eegT)[3]))
-  eegNTp <- array(dim = c(dim(eegNT)[1]/20, dim(eegNT)[2], dim(eegNT)[3]))
-  eegTp_before_dec <- array(dim = c(dim(eegT)[1], dim(eegT)[2], dim(eegT)[3]))
-  eegNTp_before_dec <- array(dim = c(dim(eegNT)[1], dim(eegNT)[2], dim(eegNT)[3]))
+  eegTp <- array(dim = c(dim(eegT)[1], dim(eegT)[2], dim(eegT)[3]))
+  eegNTp <- array(dim = c(dim(eegNT)[1], dim(eegNT)[2], dim(eegNT)[3]))
     
   bsln_start = (bsln_start - left_border) / 1000 * sRate;
   bsln_end = (bsln_end - left_border) / 1000 * sRate;
   
-  bsln_start = max(bsln_start, 1)
+#   bsln_start = max(bsln_start, 1)
   bsln_end = min(bsln_end, dim(eegT)[1])
   
   
@@ -28,7 +24,7 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
     eegNTp[ , , i] <- eeg_baseline_corrected
   }
   
-  spec_sens <- eye_1Dfeats(eegTp, eegNTp)
+  spec_sens <- eye_1Dfeats(eegTp, eegNTp, left_border, sRate)
   
   Nf <- 110
   

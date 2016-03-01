@@ -11,6 +11,11 @@ buildClassifier <- function(path, fixation_threshold=500, epoch_size=1000,
                             low=F, high=30, bsln_start = 200, bsln_end = 300, sRate = 500)
   {
   #channels from Trofimov's clf = c('PZ','P3','P4','P1','P2','PO7','PO8','PO3','PO4','Oz','O1','O2','POz')
+  
+  # !!!TMP!!!
+#   f_channels <- c(7,8,9,10,11,12,13,14,15,16,17,18,19);
+  # !!!TMP!!!
+  
   l <- load_eye_data(path, fixation_threshold, epoch_size, left_border, sRate,
                     channels, A1,A2, low, high)
   
