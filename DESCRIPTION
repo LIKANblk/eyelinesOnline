@@ -13,11 +13,15 @@ Imports:
     rjson,
     pracma,
     sperrorest,
-    R3
+    R3,
+    caret,
+    pROC
 Depends:
     Resonance,
     hybridEyeEEG,
     rjson,
     pracma,
     sperrorest,
-    R3
+    R3,
+    caret,
+    pROC
