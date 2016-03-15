@@ -17,7 +17,6 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        A2 = A2_ch,
        fixDur = l$fixationDuration,
        sRate = l$sRate,
-       t = fixDur / 1000 * sRate,
        bsln_start = bsln_start,
        bsln_end = bsln_end)
   
