@@ -6,22 +6,20 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
                       l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
                       bsln_end, left_border, high)
   
-  W <- as.numeric(params$W)
-  th <- as.numeric(params$th)
-  ufeats <- params$feats
-  A1 <- as.numeric(params$A1_ch)
-  A2 <- as.numeric(params$A2_ch)
-  fixDur <- as.numeric(params$fixationDuration)
-  sRate <- as.numeric(params$sRate)
-  
-  t <- fixDur / 1000 * sRate
-  
-  bsln_start <- as.numeric(params$bsln_start)
-  bsln_end <- as.numeric(params$bsln_end)
-  
-  
-  list(W=W, th=th, ufeats=ufeats, channels=channels, low=low, high=high, A1=A1, A2=A2, fixDur=fixDur, sRate=sRate,
-       t=t, bsln_start=bsln_start, bsln_end=bsln_end)
+
+  list(W = as.numeric(params$params$W),
+       th = as.numeric(params$params$th),
+       ufeats = params$feats,
+       channels = channels,
+       low = low,
+       high = high,
+       A1 = A1_ch,
+       A2 = A2_ch,
+       fixDur = l$fixationDuration,
+       sRate = l$sRate,
+       t = fixDur / 1000 * sRate,
+       bsln_start = bsln_start,
+       bsln_end = bsln_end)
   
   #res
 #   cat("\n\n")

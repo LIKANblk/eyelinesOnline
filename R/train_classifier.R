@@ -1,4 +1,6 @@
-train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_size, A1_ch, A2_ch, bsln_start, bsln_end, left_border, high)
+train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path,
+                             epoch_size, A1_ch, A2_ch, bsln_start,
+                             bsln_end, left_border, high)
 {
   
   eegTp <- array(dim = c(dim(eegT)[1], dim(eegT)[2], dim(eegT)[3]))
@@ -33,4 +35,9 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path, epoch_s
   nfold = 5
   
   ans <- eye_train1(X0, X1, nfold)
+  ans$fixDur <- fixationDuration
+  ans$sRate <- sRate
+  ans$feats <- X0_X1
+  ans
+  
 }

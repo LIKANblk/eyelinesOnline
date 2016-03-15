@@ -33,7 +33,6 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
   for (i in 1:length(eventsNT_t))
   {
     eegNT[ , , i] <- signal[(eventsNT_t[i]+left_border+1):(eventsNT_t[i]+epoch_size+left_border), -ncol(signal)]
-    
   }
   
   l <- list(eegT = eegT, eegNT = eegNT)
