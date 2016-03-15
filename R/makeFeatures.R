@@ -1,4 +1,4 @@
-eye_1Dfeats <- function(eegTp, eegNTp, left_border, sRate)
+makeFeatures <- function(eegTp, eegNTp, left_border, sRate)
 {
   N0 <- dim(eegNTp)[3]
   N1 <- dim(eegTp)[3]
@@ -24,7 +24,6 @@ eye_1Dfeats <- function(eegTp, eegNTp, left_border, sRate)
     x <- matrix(nrow = length(ts_beg), ncol = nChannels)
     for (t in 1:length(ts_beg))
     {
-      ####4th subscript out of bounds!!!!!!!!!!##############
       x[t,] <- colMeans( eegTfilt[ts_beg[t]:ts_end[t], , i] )
     }
     X1[i,] <- as.vector(x)

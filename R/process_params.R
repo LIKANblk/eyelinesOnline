@@ -4,12 +4,11 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
   
   params <- train_classifier(l$eegT, l$eegNT, l$fixationDuration, l$sRate,
                       l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
-                      bsln_end, left_border, high)
+                      bsln_end, left_border, high, channels)
   
 
   list(W = as.numeric(params$params$W),
        th = as.numeric(params$params$th),
-       ufeats = params$feats,
        channels = channels,
        low = low,
        high = high,

@@ -17,7 +17,7 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
   eventsNT_t <- eventsNT_t[eventsNT_t<=nrow(signal)]
   eventsT_t <- eventsT_t[eventsT_t<=nrow(signal)]
   
-  cat("Train epochs: target=", length(eventsT_t), " nontarget=", length(eventsNT_t), "\n")
+#   cat("Train epochs: target=", length(eventsT_t), " nontarget=", length(eventsNT_t), "\n")
   
   nChannels <- dim(signal)[2]
   left_border = left_border/1000*sRate
