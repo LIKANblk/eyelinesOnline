@@ -17,7 +17,9 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        fixDur = l$fixationDuration,
        sRate = l$sRate,
        bsln_start = bsln_start,
-       bsln_end = bsln_end)
+       bsln_end = bsln_end,
+       left_border = left_border,
+       epochSize = dim(l$eegT)[[1]])
   
   #res
 #   cat("\n\n")
@@ -104,6 +106,40 @@ pipe.trof.classifier <- function(input, W, th, ufeats)
           ch <- ufeats[i, 2]
           X[i] <- db[ts, ch]
         }
+        Q = X %*% W
+        
+        if(Q < th ){
+          attr(db, 'byEvent')
+        } else {
+          NULL
+        }
+      })
+    }
+  )
+}
+
+pipe.trof.classifier2 <- function(input, W, th, times, dur)
+{
+  processor(
+    input,
+    prepare = function(env){
+      
+      env$ts_beg <- round(times * SI(input)$samplingRate);
+      env$ts_end <- round((times + dur) * SI(input)$samplingRate);
+      
+      SI.event()
+    },
+    online = function(windows){
+      lapply(windows, function(db){
+        
+        x <- matrix(nrow = length(ts_beg), ncol = ncol(db))
+        
+        for(t in 1:length(ts_beg)){
+          x[t,] <- colMeans( db[ts_beg[t]:ts_end[t],] )
+        }
+        
+        X <- as.vector(x)
+        
         Q = X %*% W
         
         if(Q < th ){

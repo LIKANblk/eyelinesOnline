@@ -52,14 +52,10 @@ load.eeg <- function(file, channels, low, high, refs){
   
   raw <- R3:::extractChannel(file, 0)
   #raw <- readMat(paste0(file, ".raw.mat"))$raw
-  
-  
-  RM <- diag(nrow=33)[channels,]
-  
+
   src <- source.channels(raw, 500);
+  cl <- signalPreparation(src, low = low, high=high, notch=50, refs=refs, channels=channels) 
   
-  less <- pipe.spatial(src, RM)
-  cl <- signalPreparation(less, low = low, high=high, notch=50, refs=refs) 
   
   f <- cl
   f <- cbind(f, raw[,33])

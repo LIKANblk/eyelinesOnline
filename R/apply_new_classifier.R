@@ -7,7 +7,7 @@
 
 apply_new_classifier <- function(file_edf, file_r2e, params,
                                  fixation_threshold=500, epoch_size=1000, 
-                                 left_border=-500, channels=1:17, A1=16, A2=17, 
+                                 left_border=-500, channels=1:15, A1=16, A2=17, 
                                  low=F, high=30, bsln_start = 200, bsln_end = 300, sRate = 500) {
   
   
@@ -55,6 +55,8 @@ apply_new_classifier <- function(file_edf, file_r2e, params,
     cat("Sensitivity:", sens_tst, "\n")
     cat("Specificity:", spec_tst, "\n")
     cat("AUC:", auc_tst , "\n")
-  
+    
+    
+  list(res1, res0)
   
 }

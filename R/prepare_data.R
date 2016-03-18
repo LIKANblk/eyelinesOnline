@@ -7,7 +7,7 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
   msgBallClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBallClickedInBlockedMode"),1]*sRate)
   msgBoardClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBoardClickedInBlockedMode"),1]*sRate)
   
-  epoch_size <- round((epoch_size/1000) * sRate)
+  epoch_size <- round(((epoch_size - left_border)/1000) * sRate)
   
   #eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
   eventsT_t = msgbuttonPressed_t
