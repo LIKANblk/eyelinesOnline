@@ -1,4 +1,4 @@
-load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
+load_eye_data <- function(path, epoch_size, left_border,
                          sRate, channels, A1,A2, low, high)
 {
   
@@ -6,7 +6,6 @@ load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
   
   json <- fromJSON(file = paste0(path,"meta.json"))
   
-  epoch_size = epoch_size - left_border
   eegT = c()
   eegNT = c()
   
@@ -19,15 +18,7 @@ load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
     signal = load.eeg(paste0(path, json$'valid files'[[i]]$name_eeg), channels, low, high, c(A1,A2))
     sync_marks = which(signal[,dim(signal)[2]] != 0)
     signal <- signal[(sync_marks[3]+1):dim(signal)[1],]
-    
-    #lines <- load.edf(sprintf("%s.edf", paste0(path, json$'valid files'[[i]]$name_edf)))
-    #ans <- extract.samples(lines)
-    #fixationDuration <- ans[[3]]
-    
-    #if(fixation_threshold != fixationDuration)
-    #{
-    #  next
-    #}
+  
     
     l <- prepare.data(signal, actions, epoch_size, sRate, left_border)
     
@@ -39,7 +30,6 @@ load_eye_data <- function(path, fixation_threshold, epoch_size, left_border,
   
   l <- list(eegT = eegT,
             eegNT = eegNT,
-            fixationDuration = fixation_threshold,
             sRate = sRate,
             path = path,
             epoch_size = epoch_size)  

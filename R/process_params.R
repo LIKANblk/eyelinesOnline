@@ -2,7 +2,7 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
                          bsln_end, left_border)
 {  
   
-  params <- train_classifier(l$eegT, l$eegNT, l$fixationDuration, l$sRate,
+  params <- train_classifier(l$eegT, l$eegNT, l$sRate,
                       l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
                       bsln_end, left_border, high, channels)
   
@@ -14,7 +14,6 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        high = high,
        A1 = A1_ch,
        A2 = A2_ch,
-       fixDur = l$fixationDuration,
        sRate = l$sRate,
        bsln_start = bsln_start,
        bsln_end = bsln_end,
@@ -23,7 +22,7 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
   
   #res
 #   cat("\n\n")
-#   dump(c("W", "th", "ufeats","channels", "low", "high", "A1", "A2", "fixDur", "sRate",
+#   dump(c("W", "th", "ufeats","channels", "low", "high", "A1", "A2", "sRate",
 #          "t", "bsln_start", "bsln_end", "pipe.trof.classifier", "pipe.medianWindow"), file = "")
 #   cat("RM <- diag(nrow=33)[channels,]",
 #       "FS <- pipeline(",

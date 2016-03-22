@@ -1,4 +1,4 @@
-train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path,
+train_classifier <- function(eegT, eegNT, sRate, path,
                              epoch_size, A1_ch, A2_ch, bsln_start,
                              bsln_end, left_border, high, channels)
 {
@@ -14,15 +14,13 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path,
   
   for (i in 1:dim(eegT)[3])
   {
-    eeg_baseline_corrected <- eye_preprocess(eegT[,,i], bsln_start, bsln_end)
-    eegTp[ , , i] <- eeg_baseline_corrected
+    eegTp[ , , i] <- eye_preprocess(eegT[,,i], bsln_start, bsln_end)
   }
   
   
   for (i in 1:dim(eegNT)[3])
   {
-    eeg_baseline_corrected <- eye_preprocess(eegNT[,,i], bsln_start, bsln_end)
-    eegNTp[ , , i] <- eeg_baseline_corrected
+    eegNTp[ , , i] <- eye_preprocess(eegNT[,,i], bsln_start, bsln_end)
   }
   
   X0_X1 <- makeFeatures(eegTp, eegNTp, left_border, sRate)
@@ -35,7 +33,6 @@ train_classifier <- function(eegT, eegNT, fixationDuration, sRate, path,
   nfold = 5
   
   ans <- eye_train1(X0, X1, nfold)
-  ans$fixDur <- fixationDuration
   ans$sRate <- sRate
   ans
   

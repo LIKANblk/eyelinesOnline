@@ -1,4 +1,4 @@
-get_params <- function(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sRate)
+get_params <- function(eegTp, eegNTp, ufeats, A1_ch, A2_ch, sRate)
 {
   library(sperrorest)
   
@@ -99,7 +99,6 @@ get_params <- function(eegTp, eegNTp, ufeats, A1_ch, A2_ch, fixationDuration, sR
   params$feats = ufeats
   params$A1_ch = A1_ch
   params$A2_ch = A2_ch
-  params$fixationDuration = fixationDuration
   params$sRate = sRate
   
   p <- list(params = params, spec = spec, sens = sens, acc = acc)

@@ -6,7 +6,7 @@
 # A1, A2 - idex numbers of reference electrodes !in channels list!
 # low, high - filters
 ###################################################
-buildClassifier <- function(path, fixation_threshold=500, epoch_size=1000, 
+buildClassifier <- function(path, epoch_size=1000, 
                             left_border=-500, channels=1:15, A1=16, A2=17, 
                             low=F, high=30, bsln_start = 200, bsln_end = 300, sRate = 500)
   {
@@ -16,9 +16,8 @@ buildClassifier <- function(path, fixation_threshold=500, epoch_size=1000,
 #   f_channels <- c(7,8,9,10,11,12,13,14,15,16,17,18,19);
   # !!!TMP!!!
   
-  # @todo: fixation_threshold - is it really necessary???
-  
-  l <- load_eye_data(path, fixation_threshold, epoch_size, left_border, sRate,
+
+  l <- load_eye_data(path, epoch_size, left_border, sRate,
                     channels, A1,A2, low, high)
   
   process_params(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border)
