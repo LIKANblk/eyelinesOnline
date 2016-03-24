@@ -9,8 +9,8 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
   
   epoch_size <- round(((epoch_size - left_border)/1000) * sRate)
   
-  #eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
-  eventsT_t = msgbuttonPressed_t
+  eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
+  #eventsT_t = msgbuttonPressed_t
   #eventsNT_t = c(msgClickedInBlockMode_t, msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
   eventsNT_t = msgBallClickedInBlockedMode_t
   
