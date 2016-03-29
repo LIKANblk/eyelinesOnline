@@ -1,6 +1,6 @@
 train_classifier <- function(eegT, eegNT, sRate, path,
                              epoch_size, A1_ch, A2_ch, bsln_start,
-                             bsln_end, left_border, high, channels)
+                             bsln_end, left_border, high, channels, times_seq, decimation_window)
 {
   
   eegTp <- array(dim = c(dim(eegT)[1], dim(eegT)[2], dim(eegT)[3]))
@@ -23,7 +23,7 @@ train_classifier <- function(eegT, eegNT, sRate, path,
     eegNTp[ , , i] <- eye_preprocess(eegNT[,,i], bsln_start, bsln_end)
   }
   
-  X0_X1 <- makeFeatures(eegTp, eegNTp, left_border, sRate)
+  X0_X1 <- makeFeatures(eegTp, eegNTp, left_border, sRate, times_seq, decimation_window)
   
   X0 <- X0_X1$X0
   X1 <- X0_X1$X1

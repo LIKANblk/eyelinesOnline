@@ -2,7 +2,7 @@ library(Resonance)
 library(R3)
 library(Resonate)
 
-file = 'd:/YandexDisk/eyelinesOnline/data/test-4/05.r2e'
+file = '/home/mayenok/Yandex.Disk/eyelinesOnline/data/test-4/03.r2e'
 blocks <- blockLevelRead(file)
 
 eegBlocks <- Filter(function(b){
@@ -76,7 +76,7 @@ process = function(){
   RA3 <- pipe.medianWindow(RA2, (res$bsln_start-res$left_border)/1000* SI(RA2)$samplingRate, (res$bsln_end-res$left_border)/1000* SI(RA2)$samplingRate)
   
   RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, seq(0.3,0.45,0.02)-res$left_border/1000, 0.05)
-   createOutput(RA4,"RES")
+   createOutput(RA2,"RES")
 }
 '
 
@@ -107,4 +107,4 @@ nextBlock <- function(b){
 
 lapply(blocks, nextBlock)
 
-Q <- popQueue()
+Q3 <- popQueue()

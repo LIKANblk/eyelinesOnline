@@ -1,4 +1,4 @@
-makeFeatures <- function(eegTp, eegNTp, left_border, sRate)
+makeFeatures <- function(eegTp, eegNTp, left_border, sRate, times_seq, decimation_window)
 {
   N0 <- dim(eegNTp)[3]
   N1 <- dim(eegTp)[3]
@@ -8,8 +8,8 @@ makeFeatures <- function(eegTp, eegNTp, left_border, sRate)
   
   beg_time <- left_border / 1000
   
-  times_beg <- seq(0.3,0.45,0.02);
-  times_end <- times_beg + 0.05;
+  times_beg <- times_seq/1000;
+  times_end <- times_beg + decimation_window/1000;
   ts_beg <- round((times_beg - beg_time) * sRate);
   ts_end <- round((times_end - beg_time) * sRate);
   

@@ -27,15 +27,16 @@ offline_new_classifier <- function(res, file_r2e, file_edf) {
   
   FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=c(res$A1, res$A2), channels=res$channels)
   
-  FS <- FS[(sync_marks[3]+1):nrow(signal), ]
-  FS <- source.channels(FS, samplingRate=500)
+#  FS <- FS[(sync_marks[3]+1):nrow(signal), ]
+#  FS <- source.channels(FS, samplingRate=500)
+  
+  online_epoch_start = min(res$bsln_start, res$times_seq[1])
+  online_epoch_end = max(res$bsln_end, (res$times_seq + res$decimation_window)) 
    
   ev <- input(2)
-  RA2 <- cross.windowizeByEvents(FS, ev, (res$epochSize-res$left_border)/1000*SI(FS)$samplingRate, shift=res$left_border/1000*SI(FS)$samplingRate)
-  #@todo - compare cut epochs with cut epochs from apply_new_classifier
-  RA3 <- pipe.medianWindow(RA2, (res$bsln_start-res$left_border)/1000* SI(RA2)$samplingRate, (res$bsln_end-res$left_border)/1000* SI(RA2)$samplingRate)
-  
-  RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, seq(0.3,0.45,0.02)-res$left_border/1000, 0.05)
+  RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_end/1000*SI(FS)$samplingRate, shift=online_epoch_start/1000*SI(FS)$samplingRate)
+  RA3 <- pipe.medianWindow(RA2, (res$bsln_start)/1000* SI(RA2)$samplingRate, (res$bsln_end)/1000* SI(RA2)$samplingRate)
+  RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, res$times_seq/1000, 0.05)
   
   number_of_clicks <- sum(sapply(RA4, function(x) is.null(x)))
   print(c("Number of recognized clicks = ", number_of_clicks))

@@ -1,10 +1,10 @@
 process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
-                         bsln_end, left_border)
+                         bsln_end, left_border, times_seq, decimation_window)
 {  
   
   params <- train_classifier(l$eegT, l$eegNT, l$sRate,
                       l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
-                      bsln_end, left_border, high, channels)
+                      bsln_end, left_border, high, channels, times_seq, decimation_window)
   
 
   list(W = as.numeric(params$params$W),
@@ -17,8 +17,8 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        sRate = l$sRate,
        bsln_start = bsln_start,
        bsln_end = bsln_end,
-       left_border = left_border,
-       epochSize = dim(l$eegT)[[1]])
+       times_seq = times_seq, 
+       decimation_window = decimation_window)
   
   #res
 #   cat("\n\n")
