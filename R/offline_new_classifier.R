@@ -14,8 +14,12 @@ offline_new_classifier <- function(res, file_r2e, file_edf) {
   msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*1E6)
   msgBallMoved_t <- ceiling(actions[which(actions$Type=="msgBallMoved"),1]*1E6)
   msgBallClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBallClickedInBlockedMode"),1]*1E6)
+
+  msgQuick_t <- ceiling(actions[which(actions$Type=='quick.click'),1]*1E6)
   
-  eventsT_t = c(msgbuttonPressed_t)# msgballChosen_t, msgBallMoved_t)
+  eventsT_t = c(msgQuick_t) #msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
+
+ # eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
   msgev <- rep("GFY", length(eventsT_t))
   
   input1 <- source.channels(signal, samplingRate=500)
@@ -38,7 +42,7 @@ offline_new_classifier <- function(res, file_r2e, file_edf) {
   RA3 <- pipe.medianWindow(RA2, (res$bsln_start)/1000* SI(RA2)$samplingRate, (res$bsln_end)/1000* SI(RA2)$samplingRate)
   RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, res$times_seq/1000, 0.05)
   
-  number_of_clicks <- sum(sapply(RA4, function(x) is.null(x)))
+  number_of_clicks <- sum(sapply(RA4, function(x) !is.null(x)))
   print(c("Number of recognized clicks = ", number_of_clicks))
   
   RA4
