@@ -1,7 +1,6 @@
-library(Resonance)
 library(R3)
 
-file = 'd:/YandexDisk/eyelinesOnline/data/test-online/03.r2e'
+file = 'd:/YandexDisk/eyelinesOnline/data/test-online/02.r2e'
 blocks <- blockLevelRead(file)
 
 eegBlocks <- Filter(function(b){
@@ -41,12 +40,9 @@ blocks <- blocks[order(TS)]
 
 
 code <- '
-
-require(Resonance)
+library(Resonance)
 library(Resonate)
 library(eyelinesOnline)
-
-options(error=function(){traceback()})
 
 res <-
 structure(list(W = c(-0.0145912580010955, -0.0218431115862439, 
@@ -91,22 +87,47 @@ bsln_end = 300, times_seq = c(300, 320, 340, 360, 380, 400,
 "bsln_end", "times_seq", "decimation_window"))
 
 
-online_epoch_start = min(res$bsln_start, res$times_seq[1])
-online_epoch_end = max(res$bsln_end, (res$times_seq + res$decimation_window)) 
+
+online_epoch_start <- min(res$bsln_start, res$times_seq[1])
+online_epoch_end <- max(res$bsln_end, (res$times_seq + res$decimation_window))
+  
+refs <- c(res$A1, res$A2)
+
+online_epoch_size <- online_epoch_end - online_epoch_start
+online_epoch_shift <- online_epoch_start - 500
+
+times_seq <- res$times_seq - online_epoch_start
+
+bsln_start <- res$bsln_start - online_epoch_start
+bsln_end <- res$bsln_end - online_epoch_start
 
 process = function(){
-FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=c(res$A1, res$A2), channels=res$channels)
 
+FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=refs, channels=res$channels)
 ev <- input(2)
-RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_end/1000*SI(FS)$samplingRate, shift=online_epoch_start/1000*SI(FS)$samplingRate)
-RA3 <- pipe.medianWindow(RA2, (res$bsln_start)/1000* SI(RA2)$samplingRate, (res$bsln_end)/1000* SI(RA2)$samplingRate)
-RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, res$times_seq/1000, 0.05)
+RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_size/1000*SI(FS)$samplingRate, shift=online_epoch_shift/1000*SI(FS)$samplingRate)
+createOutput(RA2, "tmp")
+RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end)/1000* SI(RA2)$samplingRate)
+RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
 createOutput(RA4,"RES")
+
 }
 '
 
-
-system.time({A <<- run.online(list(Csi, Esi), blocks, code)})
+#system.time({A <<- run.online(list(Csi, Esi), blocks, code)})
 B <- run.offline(list(Csi, Esi), blocks, code)
 
-all.equal(A$RES,B$RES, check.attributes = F)
+#all.equal(A$RES,B$RES, check.attributes = F)
+
+p <- 1
+compl <- c()
+
+#for(i in clickBlocks){
+#  if(i==clickResultBlocks[[p]]){
+#    compl <<- c(compl, attr(i, 'TS'))
+#    p <<- p+1
+#  }
+#}
+
+
+
