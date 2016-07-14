@@ -106,7 +106,6 @@ process = function(){
 FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=refs, channels=res$channels)
 ev <- input(2)
 RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_size/1000*SI(FS)$samplingRate, shift=online_epoch_shift/1000*SI(FS)$samplingRate)
-createOutput(RA2, "tmp")
 RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end)/1000* SI(RA2)$samplingRate)
 RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
 createOutput(RA4,"RES")
