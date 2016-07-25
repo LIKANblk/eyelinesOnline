@@ -1,6 +1,5 @@
 count_diff_fixation_clf_response <- function(filename, file_edf, gap_between_short_fixations = 100,
                                              long_fixation = 2000, short_fixation = 500){
-  library(eyelinesOnline)
   signal_raw <- R3:::extractChannel(filename, 0)
   
   signal <- load.eeg(filename, channels=c(1:5,7,9:15), low = F, high=5, refs=c(16,17)) 
