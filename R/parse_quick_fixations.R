@@ -33,8 +33,12 @@ parse_quick_fixations <- function(filename, file_edf, gap_between_short_fixation
   qf <- str_filter(lines, "^quick fixation.+x += ([[:digit:]]+).+y += ([[:digit:]]+).+time += ([[:digit:]]+)")
   qfsdf <- data.frame(x = sapply(qf, function(x) as.numeric(x[2])), y = sapply(qf, function(x) as.numeric(x[3])), time = sapply(qf, function(x) as.numeric(x[4])- first_sync))
   lookOnlyQuickFixes <- qfsdf[which(qfsdf$time %in% quickFixes), ]
+  lookOnlyQuickFixes <- cbind(lookOnlyQuickFixes, data.frame(attempt="", stringsAsFactors = F))
+  q <- 1
   for ( i in 1:nrow(lookOnlyQuickFixes)){
-    if(lookOnlyQuickFixes$time[i] ){
+    if(i == 1 ){
+      lookOnlyQuickFixes$attempt[i] <- as.character(q)
+    } else {
       
     }
   }
