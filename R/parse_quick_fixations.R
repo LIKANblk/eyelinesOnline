@@ -1,45 +1,71 @@
-parse_quick_fixations <- function(filename, file_edf, gap_between_short_fixations = 100, long_fixation = 2000) {
+parse_quick_fixations <- function(filename, file_edf, gap_between_short_fixations = 110, long_fixation = 2000) {
   ans <- load.one.eye(file_edf)
   lines <- ans$events$message
   sRate <- 1000
   first_sync <- ans$sync_timestamp
-  quick.fixations <- sapply(str_filter(lines, "^quick fixation.+time += ([[:digit:]]+)"), function(i) (as.numeric(i[[2]]) - first_sync))  
-  clicks_on_long_fixations <- sapply(str_filter(lines, "^fixation.+time += ([[:digit:]]+)"), function(i) (as.numeric(i[[2]]) - first_sync))
-  clicks_on_clf <- sapply(str_filter(lines, "^received click.+time += ([[:digit:]]+)"), function(i) (as.numeric(i[[2]]) - first_sync))
-  DF <- rbind(
-    data.frame(time = quick.fixations, type = "quick_fixation"),
-    data.frame(time = clicks_on_long_fixations, type = "click_on_long_fixation"),
-    data.frame(time = clicks_on_clf, type = "click_on_clf")
-  )
-  DF <- DF[order(DF$time, as.numeric(DF$type)),]
-  DF$type = sapply(DF$type, as.character)
-  max_n_quick_fix <-(long_fixation-500)/ gap_between_short_fixations
-  for (i in 1:nrow(DF)){
-    if(DF$type[i] == "click_on_clf" || DF$type[i] == "click_on_long_fixation"){
-      for(ii in 1:max_n_quick_fix){
-        if(ii < i){
-          if(DF$time[i] - DF$time[i-(min(ii, (i-1)))] <= long_fixation){
-            DF$type[i-ii] = "remove"
-          }
-        } else {
-          break
-        }
-      }
-      DF$type[i] = "remove"
+  
+  create.df <- function(lines, ev){
+    evs <- str_filter(lines, paste("^", ev, ".+x += ([[:digit:]]+).+y += ([[:digit:]]+).+time += ([[:digit:]]+)", sep = ""))
+    df <- data.frame(x = sapply(evs, function(x){as.numeric(x[2])}),
+                     y = sapply(evs, function(x){as.numeric(x[3])}),
+                     time = sapply(evs, function(x){as.numeric(x[4])}),
+                     type = ev)
+    df
+  }
+  quick.fixations <- create.df(lines, "quick fixation")
+  clicks_on_long_fixations <- create.df(lines, "fixation")
+  clicks_on_clf <- create.df(lines, "received")
+  
+  clusters <- Reduce(function(clusters, time){
+    
+    if(is.logical(clusters)) return( data.frame(time=time, count=1, times=I(list(time))) )
+    
+    last <- nrow(clusters)
+    
+    if( (time - clusters$time[last])<= gap_between_short_fixations ){
+      clusters[nrow(clusters), ] <- list(
+        time=time, 
+        count=clusters$count[last]+1, 
+        times=I( list( c(clusters$times[last][[1]], time) ))
+      )
+    } else {
+      clusters[nrow(clusters)+1,] <- list(
+        time=time,
+        count=1,
+        times=I(list(time))
+      )
     }
+    clusters
+    
+  }, quick.fixations$time, FALSE)
+  
+  DF <- rbind(
+    data.frame(time=clusters$time, type="quick"),
+    clicks_on_long_fixations[,c('time','type')], 
+    clicks_on_clf[,c('time','type')])
+  
+  DF <- DF[order(DF$time, as.numeric(DF$type)),]
+  ids <- which(DF$type=="quick")
+  ids <- ids[ !DF$type[ids+1] %in% c('fixation', 'received') ]
+  quick_fixes_without_clicks <- clusters[which(clusters$time %in% DF$time[ids]),]
+  z <- vector(mode = "numeric")
+  for (i in 1:length(quick_fixes_without_clicks$count)){
+    z[i] <- ((quick_fixes_without_clicks$count[i]-1)*100)+300
   }
   
-  quickFixes <- DF$time[which(DF$type!="remove")]
-  qf <- str_filter(lines, "^quick fixation.+x += ([[:digit:]]+).+y += ([[:digit:]]+).+time += ([[:digit:]]+)")
-  qfsdf <- data.frame(x = sapply(qf, function(x) as.numeric(x[2])), y = sapply(qf, function(x) as.numeric(x[3])), time = sapply(qf, function(x) as.numeric(x[4])- first_sync))
-  lookOnlyQuickFixes <- qfsdf[which(qfsdf$time %in% quickFixes), ]
-  lookOnlyQuickFixes <- cbind(lookOnlyQuickFixes, data.frame(attempt="", stringsAsFactors = F))
-  q <- 1
-  for ( i in 1:nrow(lookOnlyQuickFixes)){
-    if(i == 1 ){
-      lookOnlyQuickFixes$attempt[i] <- as.character(q)
-    } else {
-      
-    }
-  }
+  file_to_save <- paste(gsub("[[:digit:]]+.r2e", '', filename), "quick_fixations_without_click_in_", gsub('/.+/',"",filename), '.jpg', sep="")
+  file_to_save_txt <- paste(gsub("[[:digit:]]+.r2e", '', filename), "quick_fixations_without_click_in_", gsub('/.+/',"",filename), '.txt', sep="")
+  
+  df_for_ggplot <- data.frame(count = z, stringsAsFactors=FALSE)
+  p <- ggplot(data=df_for_ggplot, aes(df_for_ggplot$count)) + 
+    geom_histogram(breaks=seq(0, long_fixation - 100, by = 100), 
+                   col="mediumseagreen", 
+                   fill="mediumseagreen", 
+                   alpha = .2) + 
+    labs(title=paste("Histogram of quick fixations without click", "in", gsub('/.+/',"",filename))) +
+    labs(x="fixations length", y="Count") 
+  
+  print(p)
+  ggsave(filename = file_to_save, plot = p)
+  write( paste("quick fixations without click =", z), file = file_to_save_txt)
 }

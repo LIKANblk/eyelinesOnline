@@ -33,6 +33,8 @@ count_diff_fixation_clf_response <- function(filename, file_edf, gap_between_sho
   
   draw_attempts_plot(diffs_clf_fix_choose,long_fixation,gap_between_short_fixations, 'ball_clicked', filename)
   draw_attempts_plot(diffs_clf_fix_move,long_fixation,gap_between_short_fixations, 'empty_field_clicked', filename)
+  parse_quick_fixations(filename, file_edf)
+  
   return (list(attempts_df = x, game_events = l, selected_attempts = z,
                diffs_clf_fix_choose = diffs_clf_fix_choose,
                diffs_clf_fix_move = diffs_clf_fix_move))

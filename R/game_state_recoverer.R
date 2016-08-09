@@ -1,0 +1,66 @@
+file_edf <- ('/home/mayenok/tmp/test-online5/24493727.edf')
+ans <- load.one.eye(file_edf)
+lines <- ans$events$message
+first_sync <- ans$sync_timestamp
+game_messages <- lines[grep('gm', lines)]
+game_messages <- game_messages[-grep('BoardPositionClicked', game_messages)]
+game_messages <- game_messages[-grep('BallClickedInBlockedMode', game_messages)]
+game_messages <- game_messages[-grep('BoardClickedInBlockedMode', game_messages)]
+
+
+start_game_timestamp <- as.numeric(str_filter(game_messages[grep('newGame', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
+end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
+
+events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
+                                                events_timestamps >= start_game_timestamp &
+                                                events_timestamps <= end_game_timestamp ])
+# meaningful messages types:
+# - ballCreate
+# - ballSelect
+# - ballMove
+# - ballRemove
+
+
+
+generate_game_scheme <- function(game_messages,game_list_timestamps){
+  game_states <- list()
+  game_list_timestamps <- sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+  for (i in 1:length(events_timestamps)){
+    if(i == 1){
+      m <- matrix(0, nrow = 9, ncol = 9)
+    }
+    actual_messages <- game_messages[which(game_list_timestamps %in% events_timestamps[i])]
+    for ( ii in 1:length(actual_messages)){
+      e <- str_filter(actual_messages[ii], 'type\\":\\"([[:alpha:]]+)')[[1]][2]
+      if(e == "ballCreate"){
+        params <- as.numeric(unlist(str_filter(actual_messages[ii], 'color\\":([[:digit:]]),\\"index\\":([[:digit:]]+)'))[c(2,3)])
+        m[get_position(params[2])[1], get_position(params[2])[2]] <- params[1]
+      } else if (e == "ballRemove"){
+        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])
+        m[get_position(index)[1], get_position(index)[2]] <- 0
+      } else if(e == "ballSelect"){
+        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])
+        m[get_position(index)[1], get_position(index)[2]] <- m[get_position(index)[1], get_position(index)[2]] + 100
+      } else if(e == "ballMove"){
+        params <- as.numeric(unlist(str_filter(actual_messages[ii], 'from\\":([[:digit:]]+),\\"to\\":([[:digit:]]+)'))[c(2,3)])
+        from_pos <- get_position(params[1])
+        to_pos <- get_position(params[2])
+        color <- m[from_pos[1], from_pos[2]] - 100
+        m[from_pos[1], from_pos[2]] <- 0
+        m[to_pos[1], to_pos[2]] <- color
+      }
+    }
+    game_states[[i]] <- m
+    if(i < length(events_timestamps)){
+      game_states[[i+1]] <- m
+    }
+  }
+  game_states
+}
+
+get_position <- function(index) {
+  elemCol <- max(index %% 9, 1)
+  elemRow <- max(index / 9, 1)
+  c(elemRow, elemCol)
+}

@@ -12,27 +12,18 @@ get_game_events <- function(file_edf, filename){
   
   DF <- rbind(data.frame(type='choose', time=ball.choose), data.frame(type='move', time=ball.move), data.frame(type='fix', time=fixations))
   DF <- DF[order(DF$time, -as.numeric(DF$type)),]
-  for (i in 1:nrow(DF)){
-    if(i < nrow(DF)){
-      if(DF$type[i] == "fix" && DF$type[i+1] == "fix"){
-        DF$type[i] = NA
-        DF$time[i] = NA
-      }
-    } else {
-      if(DF$type[i] == "fix"){
-        DF$type[i] = NA
-        DF$time[i] = NA
-      }
-    }
+  
+  number_of_evs <- function(DF, name){
+    ids <- which(DF$type==name)
+    ids <- ids[ids>1]
+    
+    ids <- ids[DF$type[ids-1]=='fix']
+    ids <- ids[(DF$time[ids]-DF$time[ids-1])<0.02]
+    length(ids)
   }
   
-  DF <- DF[(complete.cases(DF)),]
-  
-  a <- which(DF$type=='fix')
-  if(any((DF$time[a+1]-DF$time[a])>0.020)) stop('Events looks like shit')
-  
-  ball_choose_long_fixations <- sum(DF$type[a+1]=="choose")
-  ball_move_long_fixations <- sum(DF$type[a+1]=="move")
+  ball_choose_long_fixations <- number_of_evs(DF, "choose")
+  ball_move_long_fixations <- number_of_evs(DF, "move")
   
   
   write(c( paste("ball_choose_long_fixations =", ball_choose_long_fixations),

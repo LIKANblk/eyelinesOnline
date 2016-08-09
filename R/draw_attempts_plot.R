@@ -1,6 +1,8 @@
 draw_attempts_plot <- function(z,long_fixation,gap_between_short_fixations, plot_name, filename) {
   file_to_save <- paste(gsub("[[:digit:]]+.r2e", '', filename), plot_name, "-", gsub('/.+/',"",filename), '.jpg', sep="")
-  if(length(z)>0){
+  file_to_save_txt <- paste(gsub("[[:digit:]]+.r2e", '', filename), plot_name, "-", gsub('/.+/',"",filename), '.txt', sep="")
+  
+  if(length(z)>1){
     diff_fix_clf <- sapply(z, function(x) { ceiling(diff(unlist(x))*1000)})
     diff_fix_clf <- diff_fix_clf[lapply(diff_fix_clf,length)>0]
     attempts <- vector(mode = 'numeric', length=length(diff_fix_clf))
@@ -26,6 +28,8 @@ draw_attempts_plot <- function(z,long_fixation,gap_between_short_fixations, plot
     
     print(p)
     ggsave(filename = file_to_save, plot = p)
+    write(paste("attempts to run classifier when ",plot_name, "=",attempts), file = file_to_save_txt)
+    
   } else {
     pp <- qplot()
     pp <- pp + 
