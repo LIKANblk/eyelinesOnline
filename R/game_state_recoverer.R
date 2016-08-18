@@ -1,20 +1,26 @@
-file_edf <- ('/home/mayenok/tmp/test-online5/24493727.edf')
-ans <- load.one.eye(file_edf)
-lines <- ans$events$message
-first_sync <- ans$sync_timestamp
-game_messages <- lines[grep('gm', lines)]
-game_messages <- game_messages[-grep('BoardPositionClicked', game_messages)]
-game_messages <- game_messages[-grep('BallClickedInBlockedMode', game_messages)]
-game_messages <- game_messages[-grep('BoardClickedInBlockedMode', game_messages)]
+game_state_recoverer <- function(file_edf)
+{
+  ans <- load.one.eye(file_edf)
+  lines <- ans$events$message
+  first_sync <- ans$sync_timestamp
+  game_messages <- lines[grep('gm', lines)]
+  game_messages <- game_messages[-grep('BoardPositionClicked', game_messages)]
+  game_messages <- game_messages[-grep('BallClickedInBlockedMode', game_messages)]
+  game_messages <- game_messages[-grep('BoardClickedInBlockedMode', game_messages)]
+  
+  
+  start_game_timestamp <- as.numeric(str_filter(game_messages[grep('newGame', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
+  end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
+  
+  events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+  events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
+                                                  events_timestamps >= start_game_timestamp &
+                                                  events_timestamps <= end_game_timestamp ])
+  
+  scheme <- generate_game_scheme(game_messages,game_list_timestamps, events_timestamps)
+  scheme
+}
 
-
-start_game_timestamp <- as.numeric(str_filter(game_messages[grep('newGame', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
-end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
-
-events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
-events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
-                                                events_timestamps >= start_game_timestamp &
-                                                events_timestamps <= end_game_timestamp ])
 # meaningful messages types:
 # - ballCreate
 # - ballSelect
@@ -23,7 +29,7 @@ events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
 
 
 
-generate_game_scheme <- function(game_messages,game_list_timestamps){
+generate_game_scheme <- function(game_messages,game_list_timestamps, events_timestamps){
   game_states <- list()
   game_list_timestamps <- sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
   for (i in 1:length(events_timestamps)){
@@ -35,20 +41,23 @@ generate_game_scheme <- function(game_messages,game_list_timestamps){
       e <- str_filter(actual_messages[ii], 'type\\":\\"([[:alpha:]]+)')[[1]][2]
       if(e == "ballCreate"){
         params <- as.numeric(unlist(str_filter(actual_messages[ii], 'color\\":([[:digit:]]),\\"index\\":([[:digit:]]+)'))[c(2,3)])
-        m[get_position(params[2])[1], get_position(params[2])[2]] <- params[1]
+        m[params[2]+1] <- params[1]
       } else if (e == "ballRemove"){
-        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])
-        m[get_position(index)[1], get_position(index)[2]] <- 0
+        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])+1
+        m[index] <- 0
       } else if(e == "ballSelect"){
-        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])
-        m[get_position(index)[1], get_position(index)[2]] <- m[get_position(index)[1], get_position(index)[2]] + 100
+        if(any(m > 100)){
+          m[which(m > 100)] = m[which(m > 100)] - 100
+        }
+        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])+1
+        m[index] <- m[index] + 100
       } else if(e == "ballMove"){
         params <- as.numeric(unlist(str_filter(actual_messages[ii], 'from\\":([[:digit:]]+),\\"to\\":([[:digit:]]+)'))[c(2,3)])
-        from_pos <- get_position(params[1])
-        to_pos <- get_position(params[2])
-        color <- m[from_pos[1], from_pos[2]] - 100
-        m[from_pos[1], from_pos[2]] <- 0
-        m[to_pos[1], to_pos[2]] <- color
+        from_pos <- params[1]+1
+        to_pos <- params[2]+1
+        color <- m[from_pos] - 100
+        m[from_pos] <- 0
+        m[to_pos] <- color
       }
     }
     game_states[[i]] <- m
