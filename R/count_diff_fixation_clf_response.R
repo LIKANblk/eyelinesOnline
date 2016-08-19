@@ -1,12 +1,12 @@
 count_diff_fixation_clf_response <- function(filename, file_edf, gap_between_short_fixations = 100,
-                                             long_fixation = 2000, short_fixation = 500){
-  signal_raw <- R3:::extractChannel(filename, 0)
+                                             long_fixation = 1000, short_fixation = 500){
+  signal_raw <- R3:::extractChannel(filename, 'EEG')
   
   signal <- load.eeg(filename, channels=c(1:5,7,9:15), low = F, high=5, refs=c(16,17)) 
   sync_mark = attr(signal_raw, 'TS')[which(signal[,dim(signal)[2]] != 0)[3]]
   
-  input_timestamps <-  sapply(R3:::extractChannel(filename, 1), function(x){(attr(x, 'TS')-sync_mark)/1E6})
-  outut_timestamps <-  sapply(R3:::extractChannel(filename, 2), function(x){(attr(x, 'TS')-sync_mark)/1E6})
+  input_timestamps <-  sapply(R3:::extractChannel(filename, 'click'), function(x){(attr(x, 'TS')-sync_mark)/1E6})
+  outut_timestamps <-  sapply(R3:::extractChannel(filename, 'RES'), function(x){(attr(x, 'TS')-sync_mark)/1E6})
   
   x <- data.frame(event = c(rep('input', length(input_timestamps)), rep('output', length(outut_timestamps))),
                   time = c(input_timestamps, outut_timestamps), stringsAsFactors=FALSE)

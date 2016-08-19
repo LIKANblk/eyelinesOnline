@@ -1,4 +1,4 @@
-parse_quick_fixations <- function(filename, file_edf, gap_between_short_fixations = 110, long_fixation = 2000) {
+parse_quick_fixations <- function(filename, file_edf, gap_between_short_fixations = 110, long_fixation = 1000) {
   ans <- load.one.eye(file_edf)
   lines <- ans$events$message
   sRate <- 1000
