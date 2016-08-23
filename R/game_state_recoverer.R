@@ -1,24 +1,40 @@
-game_state_recoverer <- function(file_edf)
+game_state_recoverer <- function(eyetracking_data)
 {
-  ans <- load.one.eye(file_edf)
-  lines <- ans$events$message
-  first_sync <- ans$sync_timestamp
+  lines <- eyetracking_data$events$message
+  first_sync <- eyetracking_data$sync_timestamp
   game_messages <- lines[grep('gm', lines)]
-  game_messages <- game_messages[-grep('BoardPositionClicked', game_messages)]
-  game_messages <- game_messages[-grep('BallClickedInBlockedMode', game_messages)]
-  game_messages <- game_messages[-grep('BoardClickedInBlockedMode', game_messages)]
-  
+  toMatch <- c('BoardPositionClicked', 'BoardClickedInBlockedMode', 'BallClickedInBlockedMode',
+               'BoardClickedInBlockedMode', 'random_block_starts', 'random_block_ends', 
+               'ReachedMaximumMovesQuantity')
+  game_messages <- game_messages[-grep(paste(toMatch ,collapse="|"), game_messages)]
+
   
   start_game_timestamp <- as.numeric(str_filter(game_messages[grep('newGame', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
   end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
   
   events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+  move_messages <- move_messages <- game_messages[grep(paste(c("ballMove", "ballSelect"),collapse="|"),game_messages)]
+  move_messages <- str_filter(move_messages, 'type\":\"([[:alpha:]]+).+time = ([[:digit:]]+)')
+  move_messages <- data.frame(
+    time = sapply(move_messages, function(x) as.numeric(x[[3]])),
+    event = sapply(move_messages, function(x) x[[2]])
+  )
+  move_durations <- vector()
+  n <- 1
+  for (i in 1:nrow(move_messages)-1)
+  {
+    if(move_messages[i,]$event == 'ballSelect' && move_messages[i+1,]$event == "ballMove"){
+      move_durations[n] = move_messages[i+1,]$time - move_messages[i,]$time
+      n <- n + 1
+    }
+  }
   events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
                                                   events_timestamps >= start_game_timestamp &
                                                   events_timestamps <= end_game_timestamp ])
   
-  scheme <- generate_game_scheme(game_messages,game_list_timestamps, events_timestamps)
-  scheme
+  scheme <- generate_game_scheme(game_messages, events_timestamps)
+  list(scheme = scheme, move_durations = move_durations,
+       events_timestamps = events_timestamps, game_messages = game_messages)
 }
 
 # meaningful messages types:
@@ -29,7 +45,7 @@ game_state_recoverer <- function(file_edf)
 
 
 
-generate_game_scheme <- function(game_messages,game_list_timestamps, events_timestamps){
+generate_game_scheme <- function(game_messages, events_timestamps){
   game_states <- list()
   game_list_timestamps <- sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
   for (i in 1:length(events_timestamps)){
