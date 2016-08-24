@@ -105,8 +105,8 @@ process_file <- function(filename_edf, filename_r2e, file_data) {
     true_positives <- true_positives[-which(true_positives > events$time[length(events$time)])]
     classifier_response <- rep(0, nrow(events))
     for ( i in 1:length(true_positives)) {
-      if((events$time[min(which(events$time >= true_positives[i]))] - true_positives[i]) < 20) {
-      classifier_response[min(which(events$time >= true_positives[i]))] <- 'true_positive'
+      if((events$time[min(which(events$time >= true_positives[i]))] - true_positives[i]) < 25) {
+        classifier_response[min(which(events$time >= true_positives[i]))] <- 'true_positive'
       }
     }
     
@@ -114,12 +114,68 @@ process_file <- function(filename_edf, filename_r2e, file_data) {
     false_negatives <- sapply(str_filter(false_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
     false_negatives <- false_negatives[-which(false_negatives > events$time[length(events$time)])]
     for ( i in 1:length(false_negatives)) {
-      if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 20) {
+      if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 25) {
         classifier_response[min(which(events$time >= false_negatives[i]))] <- 'false_negative'
       }
     }
     
     events$classifier_response <- classifier_response
+    
+    dwell_times <- data.frame(time = events$time, type = events$classifier_response)
+    dwell_times <- rbind(
+      dwell_times,
+      data.frame(time = all_quick_fixations_time, type = rep('quick', length(all_quick_fixations_time))))
+    dwell_times <- dwell_times[order(dwell_times$time),]
+    dwell_times <- dwell_times[dwell_times$time > 0,]
+    
+    
+    all_quick_fixations_time <- all_quick_fixations_time[all_quick_fixations_time>0]
+    
+    gap_between_short_fixations <- 130
+    
+    clusters <- Reduce(function(clusters, time){
+      if(is.logical(clusters)) return( data.frame(time=time, count=1, times=I(list(time))) )
+      
+      last <- nrow(clusters)
+      
+      if( (time - clusters$time[last])<= gap_between_short_fixations ){
+        clusters[nrow(clusters), ] <- list(
+          time=time, 
+          count=clusters$count[last]+1, 
+          times=I( list( c(clusters$times[last][[1]], time) ))
+        )
+      } else {
+        clusters[nrow(clusters)+1,] <- list(
+          time=time,
+          count=1,
+          times=I(list(time))
+        )
+      }
+      clusters
+      
+    }, all_quick_fixations_time, FALSE)
+    
+    cluster_for_event <- sapply(events$time, function(time){
+      idx <- which(clusters$time>=time)
+      if(length(idx)==0) stop('Can\'t find cluster for event')
+      idx <- idx[[1]]
+      
+      if(max(clusters$times[[idx]] - time) >= -75){
+        idx
+      } else {
+        if(idx<2) stop('Can\'t find cluster for event')
+        if(max(clusters$times[[idx-1]] - time) >= -75){
+          idx-1
+        } else {
+          stop('Can\'t find cluster for event')
+        }
+      }
+    })
+    
+    events$dwell_time <- clusters$count[cluster_for_event]
+    
+    
+    
   }
   
   
