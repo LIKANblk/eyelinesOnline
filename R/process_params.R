@@ -175,7 +175,7 @@ pipe.trof.classifier.output <- function(input, W, th, times, dur)
         
         Q = X %*% W
         
-        data.frame(Q=as.numeric(Q), passed=as.logical(Q<th), command=attr(db, 'byEvent'))
+        data.frame(Q=as.numeric(Q), passed=as.logical(Q<th), command=attr(db, 'byEvent'), command_time=attr(attr(db, 'byEvent'), 'TS')[[1]], time=attr(db, 'TS')[[1]])
       })
     }
   )
