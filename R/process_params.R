@@ -151,6 +151,36 @@ pipe.trof.classifier2 <- function(input, W, th, times, dur)
   )
 }
 
+pipe.trof.classifier.output <- function(input, W, th, times, dur)
+{
+  processor(
+    input,
+    prepare = function(env){
+      
+      env$ts_beg <- round(times * SI(input)$samplingRate);
+      env$ts_end <- round((times + dur) * SI(input)$samplingRate);
+      
+      SI.event()
+    },
+    online = function(windows){
+      lapply(windows, function(db){
+        
+        x <- matrix(nrow = length(ts_beg), ncol = ncol(db))
+        
+        for(t in 1:length(ts_beg)){
+          x[t,] <- colMeans( db[ts_beg[t]:ts_end[t],] )
+        }
+        
+        X <- as.vector(x)
+        
+        Q = X %*% W
+        
+        data.frame(Q=as.numeric(Q), passed=as.logical(Q<th), command=attr(db, 'byEvent'))
+      })
+    }
+  )
+}
+
 pipe.medianWindow <- function(input, bsln_start, bsln_end){
   processor(
     input,

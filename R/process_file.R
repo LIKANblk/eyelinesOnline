@@ -1,8 +1,10 @@
-process_file <- function(filename_edf, filename_r2e, file_data) {
+process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch) {
   record <- list()
   
   file_data$filename_edf <- filename_edf
   file_data$filename_r2e <- filename_r2e
+  
+  eeg_data <- list()
   
   eyetracking_data <- load.one.eye(file_data$filename_edf)
   eyetracking_messages <- eyetracking_data$events$message
@@ -94,27 +96,29 @@ process_file <- function(filename_edf, filename_r2e, file_data) {
     fixation_coords_y = fixation_coords_y
   )
   
-  toMatch = c('ballRemove','ballCreate','gameOver', 'newGame')
+  toMatch = c('ballRemove','ballCreate', 'newGame')
   events <- events[time>0,]
+  gameOver_time <- events$time[events$field_type == 'gameOver']
+  events <- events[events$time<gameOver_time,]
   events <- events[-grep(paste(toMatch ,collapse="|"), events$field_type),]
   
   if(file_data$record_type == 'test') {
     
     true_positives <- eyetracking_messages[grep('received click', eyetracking_messages)]
     true_positives <- sapply(str_filter(true_positives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
-    true_positives <- true_positives[-which(true_positives > events$time[length(events$time)])]
+    true_positives <- true_positives[true_positives>0 & true_positives<gameOver_time]
     classifier_response <- rep(0, nrow(events))
     for ( i in 1:length(true_positives)) {
-      if((events$time[min(which(events$time >= true_positives[i]))] - true_positives[i]) < 25) {
+      if((events$time[min(which(events$time >= true_positives[i]))] - true_positives[i]) < 75) {
         classifier_response[min(which(events$time >= true_positives[i]))] <- 'true_positive'
       }
     }
     
     false_negatives <- eyetracking_messages[grep('^fixation in', eyetracking_messages)]
     false_negatives <- sapply(str_filter(false_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
-    false_negatives <- false_negatives[-which(false_negatives > events$time[length(events$time)])]
+    false_negatives <- false_negatives[false_negatives>0 & false_negatives<gameOver_time]
     for ( i in 1:length(false_negatives)) {
-      if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 25) {
+      if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 75) {
         classifier_response[min(which(events$time >= false_negatives[i]))] <- 'false_negative'
       }
     }
@@ -172,14 +176,14 @@ process_file <- function(filename_edf, filename_r2e, file_data) {
       }
     })
     
-    events$dwell_time <- clusters$count[cluster_for_event]
+    events$dwell_time <- clusters$count[cluster_for_event]*100+300
     
+    eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     
     
   }
   
-  
-  
-  list(events = events, file_data = file_data)
+  l <- list(events = events, file_data = file_data, eeg_data = eeg_data)
+  save(l, file = gsub("r2e", "RData", filename_r2e))
   
 }
