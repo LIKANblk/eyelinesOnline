@@ -16,6 +16,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     file_data$button_position <- "left"
   }
   
+  file_data$quick_fixation_duration <- as.numeric(str_filter(eyetracking_messages[grep('quickFixationDuration', eyetracking_messages)], 'quickFixationDuration\":([[:digit:]]+)')[[1]][2])
+  file_data$delay_between_quick_fixations <- as.numeric(str_filter(eyetracking_messages[grep('delayBetweenQuickFixations', eyetracking_messages)], 'delayBetweenQuickFixations\":([[:digit:]]+)')[[1]][2])
+  file_data$long_fixation_duration <- as.numeric(str_filter(eyetracking_messages[grep('fixationDuration', eyetracking_messages)], 'fixationDuration\":([[:digit:]]+)')[[1]][2])
+  
   
   game_data <- game_state_recoverer(eyetracking_data)
   file_data$game_recover <- game_data$scheme
