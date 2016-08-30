@@ -13,10 +13,10 @@ load_eye_data <- function(path, epoch_size, left_border,
   
   for (i in 1:length(json$'files'))
   {
-    if(json$files[[i]]$record_type == "train"){
-    actions <- extract.actions(paste0(path,  gsub(".edf", "", json$'valid files'[[i]]$name_edf)))
+    if(json$'files'[[i]]$record_type == "train"){
+    actions <- paste0(path, gsub('.edf', '', json$'files'[[i]]$name_edf))
     #     signal = prepare(bigFatMatrix[[i]])
-    signal = load.eeg(paste0(path, json$'valid files'[[i]]$name_eeg), channels, low, high, c(A1,A2))
+    signal = load.eeg(paste0(path, json$'files'[[i]]$name_eeg), channels, low, high, c(A1,A2))
     sync_marks = which(signal[,dim(signal)[2]] != 0)
     signal <- signal[(sync_marks[3]+1):dim(signal)[1],]
   
