@@ -21,12 +21,24 @@ buildClassifier <- function(path, epoch_size=1000,
   l <- load_eye_data(path, epoch_size, left_border, sRate,
                     channels, A1,A2, low, high)
   
-  res <- process_params(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border, times_seq, decimation_window)
-  con <- file()
-  dump('res', file=con)
-  classStr <- paste(readLines(con), sep = '\n')
+  ret <- process_params(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border, times_seq, decimation_window)
   
-  sprintf(
+  class(ret) <- 'eyelinesOnline_eeg_classifier'
+  
+  ret
+}
+
+
+print.eyelinesOnline_eeg_classifier <- function(x){
+  
+  con <- file()
+  res <- x
+  dump('res', file=con)
+  classStr <- paste(readLines(con), sep = '', collapse='\n')
+  
+  on.exit(close(con))
+  
+  cat(sprintf(
     'library(Resonance)
 library(Resonate)
 library(eyelinesOnline)
@@ -55,8 +67,7 @@ RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end
 RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
 createOutput(RA4,"RES")
 }', classStr
-  )
+  ))
   
-  res
-  
+  invisible(x)
 }

@@ -51,7 +51,7 @@ load.eeg <- function(file, channels, low, high, refs){
   f <- cl
   f <- cbind(f, raw[,33])
   f[,ncol(f)] = 0
-  f[which(diff(bitwAnd(eeg[,33],2))==2), ncol(f)]=1
+  f[which(diff(bitwAnd(raw[,33],2))==2)+1, ncol(f)]=1
   f
   
 }

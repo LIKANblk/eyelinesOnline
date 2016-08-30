@@ -2,11 +2,11 @@ perform_time_correction <- function(eeg, events){
   processor(
     eeg, events,
     prepare = function(env){
-      env$synced <- false
+      env$synced <- FALSE
       env$syncstep <- 0
       env$correction <- 0
 
-      env$signal <- matrix(0.0, ncol=SI(data)$channels, nrow=2^5)
+      env$signal <- matrix(0.0, ncol=SI(eeg)$channels, nrow=2^5)
       env$pointer <- 0L
       env$si.times <- vector(mode = "double", length=nrow(env$signal))
       env$lastTS <- NA
@@ -17,15 +17,15 @@ perform_time_correction <- function(eeg, events){
     online = function(eeg, events){
       if(synced){
         if(length(events)>0){
-          split <- strsplit(events, ':')
+          split <- strsplit(sapply(events, as.character), ':')
           filt <- sapply(split, function(x) x[[1]]!='sync')
    
           return(       
-            papply(function(event, str){
+            mapply(function(event, str){
               
-              attr(event, 'TS') <- as.double(str[[3]])*1E6+correction
+              attr(event, 'TS') <- as.double(str[[4]])*1E6+correction
               
-            } ,events[[filt]], split[[filt]])
+            } ,events[filt], split[filt])
           )
         } else {
           return(list())
@@ -52,7 +52,7 @@ perform_time_correction <- function(eeg, events){
         lapply(events, function(x){
           
           str <- strsplit(x, ':')[[1]]
-          if(str[[1]]=='sync' && str[[2]]==' 2'){
+          if(str[[1]]=='sync' && str[[2]]==' 2 '){
             syncstep <<- syncstep+1
             if(syncstep==3){
               correction <<- as.double(str[[3]])
@@ -63,11 +63,11 @@ perform_time_correction <- function(eeg, events){
       }
       
       if(correction>0){
-        ct <- which(diff(bitwAnd(eeg[,33],2))==2)
+        ct <- which(diff(bitwAnd(signal[,33],2))==2)
         
         if(length(ct)>=3){
           synced <<- TRUE
-          correction <<- signal.ts[ ct[[3]] ] - correction*1E3
+          correction <<- si.times[ ct[[3]] ] - correction*1E3
         }
       }
       
