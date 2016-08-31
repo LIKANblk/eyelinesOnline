@@ -65,7 +65,8 @@ ev <- perform_time_correction(input(1), input(2))
 RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_size/1000*SI(FS)$samplingRate, shift=online_epoch_shift/1000*SI(FS)$samplingRate)
 RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end)/1000* SI(RA2)$samplingRate)
 RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
-createOutput(RA4,"RES")
+RA5 <- filter_fast_events(RA4)
+createOutput(RA5,"RES")
 }', classStr
   ))
   

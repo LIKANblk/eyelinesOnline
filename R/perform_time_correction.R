@@ -23,9 +23,10 @@ perform_time_correction <- function(eeg, events){
           return(       
             mapply(function(event, str){
               
-              attr(event, 'TS') <- as.double(str[[4]])*1E6+correction
+              attr(event, 'TS') <-attr(event, 'TS')+correction
+              event
               
-            } ,events[filt], split[filt])
+            } ,events[filt], split[filt], SIMPLIFY = F)
           )
         } else {
           return(list())
@@ -55,7 +56,7 @@ perform_time_correction <- function(eeg, events){
           if(str[[1]]=='sync' && str[[2]]==' 2 '){
             syncstep <<- syncstep+1
             if(syncstep==3){
-              correction <<- as.double(str[[3]])
+              correction <<- attr(x,'TS')
             }
           }
           
@@ -67,7 +68,7 @@ perform_time_correction <- function(eeg, events){
         
         if(length(ct)>=3){
           synced <<- TRUE
-          correction <<- si.times[ ct[[3]] ] - correction*1E3
+          correction <<- si.times[ ct[[3]] ] - correction
         }
       }
       
