@@ -1,4 +1,4 @@
-process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, default_dwell) {
+process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, default_dwell, no_eeg) {
   record <- list()
   
   file_data$filename_edf <- filename_edf
@@ -182,8 +182,9 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     })
     
     events$dwell_time <- clusters$count[cluster_for_event]*100+300
-    
-    eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
+    if(!no_eeg){
+      eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
+    }
   } else {
     events$dwell_time <- rep(default_dwell, nrow(events))
   }
