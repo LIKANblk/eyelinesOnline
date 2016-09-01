@@ -42,14 +42,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   impossible_move <- rep(FALSE, length(time))
   impossible_move[grep('blockedMove', field_type)] <- TRUE
   
-  false_alarm <- rep(FALSE, length(time))
-  if(file_data$record_type == 'test'){
-    reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - eyetracking_data$sync_timestamp
-    for ( i in 1: length(reported_alarm)) {
-      false_alarm[sum(time<reported_alarm[i])] <- TRUE
-    }
-  } 
-  
   ball_color <- rep(0, length(time))
   for (i in 1:length(time)){
     if(time[i]>0){
@@ -107,6 +99,14 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events <- events[-grep(paste(toMatch ,collapse="|"), events$field_type),]
   
   if(file_data$record_type == 'test') {
+    
+    false_alarm <- rep(FALSE, length(time))
+    if(length(grep('report', eyetracking_messages))){
+      reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - eyetracking_data$sync_timestamp
+      for ( i in 1: length(reported_alarm)) {
+        false_alarm[sum(time<reported_alarm[i])] <- TRUE
+      }
+    } 
     
     true_positives <- eyetracking_messages[grep('received click', eyetracking_messages)]
     true_positives <- sapply(str_filter(true_positives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
