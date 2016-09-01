@@ -9,6 +9,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   eyetracking_data <- load.one.eye(file_data$filename_edf)
   eyetracking_messages <- eyetracking_data$events$message
   
+  false_alarm <- rep(FALSE, length(time))
+  
   file_data$score <- as.numeric(str_filter(eyetracking_messages[grep('score', eyetracking_messages)], 'score\":([[:digit:]]+)')[[1]][2])
   if ( str_filter(eyetracking_messages[grep('blockButtonX', eyetracking_messages)], 'blockButtonX\":([[:digit:]]+)')[[1]][2] == "1290" ){
     file_data$button_position <- "right"
@@ -100,7 +102,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   if(file_data$record_type == 'test') {
     
-    false_alarm <- rep(FALSE, length(time))
     if(length(grep('report', eyetracking_messages))){
       reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - eyetracking_data$sync_timestamp
       for ( i in 1: length(reported_alarm)) {
