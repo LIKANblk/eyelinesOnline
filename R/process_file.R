@@ -11,11 +11,17 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   false_alarm <- rep(FALSE, length(time))
   
+  if(!length(grep('score', eyetracking_messages)) || !length(grep('score', eyetracking_messages))) {
+    stop(paste0(filename_edf, ' has no ending! Game was finished before gameOver was sent'))
+  }
+  
   file_data$score <- as.numeric(str_filter(eyetracking_messages[grep('score', eyetracking_messages)], 'score\":([[:digit:]]+)')[[1]][2])
   if ( str_filter(eyetracking_messages[grep('blockButtonX', eyetracking_messages)], 'blockButtonX\":([[:digit:]]+)')[[1]][2] == "1290" ){
     file_data$button_position <- "right"
-  } else {
+  } else if(str_filter(eyetracking_messages[grep('blockButtonX', eyetracking_messages)], 'blockButtonX\":([[:digit:]]+)')[[1]][2] == "550") {
     file_data$button_position <- "left"
+  } else {
+    stop('Undefined button position!')
   }
   
   file_data$quick_fixation_duration <- as.numeric(str_filter(eyetracking_messages[grep('quickFixationDuration', eyetracking_messages)], 'quickFixationDuration\":([[:digit:]]+)')[[1]][2])
