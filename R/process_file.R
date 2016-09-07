@@ -72,21 +72,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     }
   }
   
-  all_quick_fixations <- eyetracking_messages[grep('quick fixation', eyetracking_messages)]
-  all_quick_fixations_time <- sapply(str_filter(all_quick_fixations, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
-  fixation_coords_x <- rep(0, length(time))
-  fixation_coords_y <- rep(0, length(time))
-  for ( i in 1: length(time)) {
-    if(time[i]> 0){
-      fixation_coords_x[i] <- as.numeric(str_filter(
-        all_quick_fixations[sum(all_quick_fixations_time<time[i])],
-        'x = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
-      fixation_coords_y[i] <- as.numeric(str_filter(
-        all_quick_fixations[sum(all_quick_fixations_time<time[i])],
-        'y = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
-    }
-  }
-  
   events <- data.frame(
     time = time,
     field_type = field_type,
@@ -95,9 +80,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     impossible_move = impossible_move,
     false_alarm = false_alarm,
     ball_color = ball_color,
-    game_state = game_state,
-    fixation_coords_x = fixation_coords_x,
-    fixation_coords_y = fixation_coords_y
+    game_state = game_state
   )
   
   toMatch = c('ballRemove','ballCreate', 'newGame')
@@ -107,6 +90,28 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events <- events[-grep(paste(toMatch ,collapse="|"), events$field_type),]
   
   if(file_data$record_type == 'test') {
+    
+    all_quick_fixations <- eyetracking_messages[grep('quick fixation', eyetracking_messages)]
+    all_quick_fixations_time <- sapply(str_filter(all_quick_fixations, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
+    fixation_coords_x <- rep(0, length(events$time))
+    fixation_coords_y <- rep(0, length(events$time))
+    for ( i in 1: length(events$time)) {
+      if(events$time[i]> 0){
+        if(length(all_quick_fixations[sum(all_quick_fixations_time<events$time[i])])){
+          fixation_coords_x[i] <- as.numeric(str_filter(
+            all_quick_fixations[sum(all_quick_fixations_time<events$time[i])],
+            'x = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
+          fixation_coords_y[i] <- as.numeric(str_filter(
+            all_quick_fixations[sum(all_quick_fixations_time<events$time[i])],
+            'y = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
+        } else {
+          next
+        }
+      }
+    }
+    
+    events$fixation_coords_x = fixation_coords_x
+    events$fixation_coords_y = fixation_coords_y
     
     if(length(grep('report', eyetracking_messages))){
       reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - eyetracking_data$sync_timestamp
