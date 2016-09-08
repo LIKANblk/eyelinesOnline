@@ -175,24 +175,35 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       
     }, all_quick_fixations_time, FALSE)
     
-    cluster_for_event <- sapply(events$time, function(time){
-      idx <- which(clusters$time>=time)
-      if(length(idx)==0) stop('Can\'t find cluster for event')
-      idx <- idx[[1]]
-      
-      if(max(clusters$times[[idx]] - time) >= -75){
-        idx
-      } else {
-        if(idx<2) stop('Can\'t find cluster for event')
-        if(max(clusters$times[[idx-1]] - time) >= -75){
-          idx-1
-        } else {
-          stop('Can\'t find cluster for event')
+    # cluster_for_event <- sapply(events$time, function(time){
+    #   idx <- which(clusters$time>=time)
+    #   if(length(idx)==0) stop('Can\'t find cluster for event')
+    #   idx <- idx[[1]]
+    #   
+    #   if(max(clusters$times[[idx]] - time) >= -75){
+    #     idx
+    #   } else {
+    #     if(idx<2) stop('Can\'t find cluster for event')
+    #     if(max(clusters$times[[idx-1]] - time) >= -75){
+    #       idx-1
+    #     } else {
+    #       stop('Can\'t find cluster for event')
+    #     }
+    #   }
+    # })
+    
+    indicies <- rep(NA, length(clusters$time))
+    for ( i in 1:length(clusters$time)){
+      if(length(which(events$time > clusters$time[i]))){
+        cluster_index <- min(which(events$time > clusters$time[i]))
+        if(events$time[cluster_index] - clusters$time[i] <= 130){
+          indicies[i] <-cluster_index
         }
       }
-    })
+    }
     
-    events$dwell_time <- clusters$count[cluster_for_event]*100+300
+    events$dwell_time <- rep(1000, nrow(events))
+    events$dwell_time[indicies[!is.na(indicies)]] <- clusters$count[which(!is.na(indicies))]*100+300
     if(!no_eeg){
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     }
