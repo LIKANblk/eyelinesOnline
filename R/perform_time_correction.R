@@ -23,7 +23,7 @@ perform_time_correction <- function(eeg, events){
           return(       
             mapply(function(event, str){
               
-              attr(event, 'TS') <-attr(event, 'TS')+correction
+              attr(event, 'TS') <- attr(event, 'TS')+correction
               event
               
             } ,events[filt], split[filt], SIMPLIFY = F)
@@ -73,6 +73,36 @@ perform_time_correction <- function(eeg, events){
       }
       
       list()
+    },
+    offline = function(eeg, events){
+      # find correction event
+      sync_events <- sapply(events, function(ev){
+        str <- strsplit(ev, ':')[[1]]
+        str[[1]] == 'sync' && str[[2]]==' 2 '
+      })
+      
+      w <- which(sync_events)
+      if(length(w)<3) return(list())
+      
+      correction <- attr(events[[ w[[3]] ]], 'TS')
+      
+      ct <- which(diff(bitwAnd(eeg[,33],2))==2)
+      if(length(ct)<3) return(list())
+      
+      correction <- attr(eeg, 'TS')[ ct[[3]] ] - correction
+      
+      
+      # drop extra events, fix others and return them
+      
+      events <- Filter(function(ev){
+        str <- strsplit(ev, ':')[[1]]
+        str[[1]] != 'sync'
+      }, events)
+      
+      lapply(events, function(ev){
+        attr(ev, 'TS') <- attr(ev, 'TS') + correction
+        ev
+      })
     }
   )
 }

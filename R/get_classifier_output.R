@@ -2,8 +2,8 @@ get_classifier_output <- function(filename_r2e, filename_classifier, start_epoch
   classifier <- readChar(filename_classifier, file.info(filename_classifier)$size)
   classifier <- strRep(classifier, '\r', '')
   classifier <- strRep(classifier, 'pipe.trof.classifier2', 'pipe.trof.classifier.output')
-  classifier <- strRep(classifier, 'createOutput(RA4,"RES")',sprintf('
-createOutput(RA4,"RES")
+  classifier <- strRep(classifier, 'createOutput(RA5,"RES")',sprintf('
+createOutput(RA5,"RES")
 times <- input(4)
 raw_epoch <- cross.windowizeByEvents(input(1), times, %1$i/1000*SI(FS)$samplingRate, %2$i/1000*SI(FS)$samplingRate)
 createOutput(raw_epoch, "raw_epochs")
