@@ -207,6 +207,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     if(!no_eeg){
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     }
+    dwell_histogram(events, file_data)
   } else {
     events$dwell_time <- rep(default_dwell, nrow(events))
   }

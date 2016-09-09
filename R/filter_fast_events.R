@@ -8,10 +8,10 @@ filter_fast_events <- function(events, tooFast = 1000){
     },
     online = function(events){
       ret <- list()
-      for(event in events){
-        if(!is.null(attr(event, 'TS')) && attr(event, 'TS')-lastTS >=barrier){
-          lastTS <<- attr(event, 'TS')
-          ret <- c(ret, event)
+      for(ev in events){
+        if(!is.null(attr(ev, 'TS')) && attr(ev, 'TS')-lastTS >=barrier){
+          lastTS <<- attr(ev, 'TS')
+          ret <- c(ret, list(ev))
         }
       }
       

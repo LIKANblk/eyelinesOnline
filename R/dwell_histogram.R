@@ -5,7 +5,7 @@ dwell_histogram <- function(events, file_data) {
   p <- ggplot(data=events, aes(x = dwell_time, fill = field_type)) + 
     geom_histogram(bins = (file_data$long_fixation_duration / file_data$delay_between_quick_fixations) -
                      (file_data$quick_fixation_duration / file_data$delay_between_quick_fixations),
-                   alpha = .9, colour = "#333333") + 
+                   alpha = .9, colour = "#666666") + 
     labs(title=paste("Histogram of dwell times before click in",
                      str_filter(file_data$filename_r2e, '([[:digit:]]+).r2e')[[1]][1])) +
     labs(x="Dwell time", y="Count") +
