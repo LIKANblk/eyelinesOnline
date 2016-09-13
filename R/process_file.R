@@ -8,6 +8,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   eyetracking_data <- load.one.eye(file_data$filename_edf)
   eyetracking_messages <- eyetracking_data$events$message
+  sync_timestamp <- eyetracking_data$sync_timestamp
   
   false_alarm <- rep(FALSE, length(time))
   
@@ -31,10 +32,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   game_data <- game_state_recoverer(eyetracking_data)
   file_data$game_recover <- game_data$scheme
-  file_data$events_timestamps <- game_data$events_timestamps - eyetracking_data$sync_timestamp
+  file_data$events_timestamps <- game_data$events_timestamps - sync_timestamp
   record$file_data <- file_data
   
-  time = sapply(str_filter(game_data$game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]]))) - eyetracking_data$sync_timestamp
+  time = sapply(str_filter(game_data$game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]]))) - sync_timestamp
   field_type = sapply(str_filter(game_data$game_messages, 'type\":\"([[:alpha:]]+)'), function(i) (i[[2]]))
   field_type[grep('ballMove', field_type)] <- 'field'
   field_type[grep('ballSelect', field_type)] <- 'ball'
@@ -56,8 +57,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       if(is.na(field_position[i])){
         ball_color[i] <- 0
       } else {
-        if (length(which(game_data$events_timestamps - eyetracking_data$sync_timestamp == time[i]))) {
-          ball_color[i] <- game_data$scheme[[which(game_data$events_timestamps - eyetracking_data$sync_timestamp == time[i])]][field_position[i]+1]
+        if (length(which(game_data$events_timestamps - sync_timestamp == time[i]))) {
+          ball_color[i] <- game_data$scheme[[which(game_data$events_timestamps - sync_timestamp == time[i])]][field_position[i]+1]
           if(ball_color[i]>100) ball_color[i] <- ball_color[i] - 100
         }
       }
@@ -66,7 +67,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   game_state <- rep(NA, length(time))
   for (i in 1:length(time)) {
-    state_num <- which(time[i] == (game_data$events_timestamps - eyetracking_data$sync_timestamp))
+    state_num <- which(time[i] == (game_data$events_timestamps - sync_timestamp))
     if(length(state_num)) {
       game_state[i] <- state_num
     }
@@ -92,7 +93,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   if(file_data$record_type == 'test') {
     
     all_quick_fixations <- eyetracking_messages[grep('quick fixation', eyetracking_messages)]
-    all_quick_fixations_time <- sapply(str_filter(all_quick_fixations, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
+    all_quick_fixations_time <- sapply(str_filter(all_quick_fixations, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp)
     fixation_coords_x <- rep(0, length(events$time))
     fixation_coords_y <- rep(0, length(events$time))
     for ( i in 1: length(events$time)) {
@@ -114,14 +115,14 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     events$fixation_coords_y = fixation_coords_y
     
     if(length(grep('report', eyetracking_messages))){
-      reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - eyetracking_data$sync_timestamp
+      reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - sync_timestamp
       for ( i in 1: length(reported_alarm)) {
-        false_alarm[sum(time<reported_alarm[i])] <- TRUE
+        events$false_alarm[sum(events$time<reported_alarm[i])] <- TRUE
       }
     } 
     
     true_positives <- eyetracking_messages[grep('received click', eyetracking_messages)]
-    true_positives <- sapply(str_filter(true_positives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
+    true_positives <- sapply(str_filter(true_positives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp)
     true_positives <- true_positives[true_positives>0 & true_positives<gameOver_time]
     classifier_response <- rep(0, nrow(events))
     for ( i in 1:length(true_positives)) {
@@ -131,7 +132,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     }
     
     false_negatives <- eyetracking_messages[grep('^fixation in', eyetracking_messages)]
-    false_negatives <- sapply(str_filter(false_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - eyetracking_data$sync_timestamp)
+    false_negatives <- sapply(str_filter(false_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp)
     false_negatives <- false_negatives[false_negatives>0 & false_negatives<gameOver_time]
     for ( i in 1:length(false_negatives)) {
       if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 75) {
@@ -175,23 +176,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       
     }, all_quick_fixations_time, FALSE)
     
-    # cluster_for_event <- sapply(events$time, function(time){
-    #   idx <- which(clusters$time>=time)
-    #   if(length(idx)==0) stop('Can\'t find cluster for event')
-    #   idx <- idx[[1]]
-    #   
-    #   if(max(clusters$times[[idx]] - time) >= -75){
-    #     idx
-    #   } else {
-    #     if(idx<2) stop('Can\'t find cluster for event')
-    #     if(max(clusters$times[[idx-1]] - time) >= -75){
-    #       idx-1
-    #     } else {
-    #       stop('Can\'t find cluster for event')
-    #     }
-    #   }
-    # })
-    
     indicies <- rep(NA, length(clusters$time))
     for ( i in 1:length(clusters$time)){
       if(length(which(events$time > clusters$time[i]))){
@@ -202,14 +186,69 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       }
     }
     
+    true_negatives <- lapply(clusters$time[which(is.na(indicies))], function(x) {
+      eyetracking_messages[grep(sync_timestamp + x, eyetracking_messages)]
+    })
+    
+    length_true_negatives <- length(clusters$count[which(is.na(indicies))])
+    true_negatives <- data.frame(
+      time = sapply(str_filter(true_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp),
+      field_type = rep(NA, length_true_negatives),
+      prev_field_position = rep(NA, length_true_negatives),
+      field_position = rep(NA, length_true_negatives),
+      impossible_move = rep(NA, length_true_negatives),
+      false_alarm = rep(FALSE, length_true_negatives),
+      ball_color = rep(NA, length_true_negatives),
+      game_state = rep(NA, length_true_negatives),
+      fixation_coords_x = sapply(str_filter(true_negatives, 'x = ([[:digit:]]+\\.?[[:digit:]]*)'), function(x) as.numeric(x[[2]])),
+      fixation_coords_y = sapply(str_filter(true_negatives, 'y = ([[:digit:]]+\\.?[[:digit:]]*)'), function(x) as.numeric(x[[2]])),
+      classifier_response = rep('true_negative', length_true_negatives),
+      dwell_time = (clusters$count[which(is.na(indicies))] - 1) * 100 + 300)
+    
+    true_negatives_in_events <- c()
+    for (i in 1: nrow(true_negatives)){
+      if(length( which(file_data$events_timestamps > true_negatives$time[i]))){
+        true_negatives_in_events[i] <- max(which(file_data$events_timestamps < true_negatives$time[i]))
+      }
+    }
+    
+    windowWidth <- 1920
+    windowHeight <- 1080
+    cellSize <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('cellSize', eyetracking_messages)], 'cellSize\":([[:digit:]]+)'))[2])
+    nCellsX <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('nCellsX', eyetracking_messages)], 'nCellsX\":([[:digit:]]+)'))[2])
+    nCellsY <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('nCellsY', eyetracking_messages)], 'nCellsY\":([[:digit:]]+)'))[2])
+    cellMargin <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('cellMargin', eyetracking_messages)], 'cellMargin\":([[:digit:]]+)'))[2])
+    true_negative_events <- c()
+    for ( i in 1:length(true_negatives_in_events)){
+      true_negative_events[i] <- getEventType(file_data$game_recover[[true_negatives_in_events[i]]],
+                                              true_negatives$fixation_coords_x[i], true_negatives$fixation_coords_y[i],
+                                              windowWidth, windowHeight, nCellsX, nCellsY, cellSize, cellMargin)
+    }
+    
+    true_negatives$game_state[1:length(true_negatives_in_events)] <- true_negatives_in_events
+    true_negatives <- true_negatives[!is.na(true_negatives$game_state),]
+    true_negatives$ball_color <- true_negative_events
+    
+    for(i in 1:nrow(true_negatives)){
+      if(true_negatives$ball_color[i] == 0){
+        true_negatives$field_type[i] = 'field'
+      } else if (true_negatives$ball_color[i] > 0){
+        true_negatives$field_type[i] = 'ball'
+      }
+    }
+   
     events$dwell_time <- rep(1000, nrow(events))
-    events$dwell_time[indicies[!is.na(indicies)]] <- clusters$count[which(!is.na(indicies))]*100+300
+    events$dwell_time[indicies[!is.na(indicies)]] <- (clusters$count[which(!is.na(indicies))]-1)*100+300
+    events <- rbind(events, true_negatives)
+    events <- events[order(events$time),]
     if(!no_eeg){
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     }
-    dwell_histogram(events, file_data)
+
+   # dwell_histogram(events, file_data)
   } else {
     events$dwell_time <- rep(default_dwell, nrow(events))
+    true_negatives = c()
   }
   
   get_eye_epochs <- function(current_time, current_dwell, xy) {
@@ -222,6 +261,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   eye_epochs_x <- get_eye_epochs( events$time, events$dwell_time, 'x')
   eye_epochs_y <- get_eye_epochs( events$time, events$dwell_time, 'y')
   
-  save(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x,  eye_epochs_y = eye_epochs_y, file = gsub("r2e", "RData", filename_r2e))
-  list(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x, eye_epochs_y = eye_epochs_y)
+  save(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x,  eye_epochs_y = eye_epochs_y, true_negatives = true_negatives, file = gsub("r2e", "RData", filename_r2e))
+  list(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x, eye_epochs_y = eye_epochs_y,  true_negatives = true_negatives)
 }

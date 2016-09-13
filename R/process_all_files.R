@@ -16,5 +16,16 @@ process_experiment <- function(path, start_epoch = -500, end_epoch = 1500, chann
     experiment[[i]] <- record 
     print(json$'files'[[i]]$name_eeg)
   }
+  summary_table <- data.frame()
+  summary_eeg <- list()
+  for ( i in 1:length(experiment)) {
+    if(experiment[[i]]$file_data$record_type == 'test') {
+      summary_table <- rbind(summary_table, experiment[[i]]$events)
+      summary_eeg <- c(summary_eeg, experiment[[i]]$eeg_data$filtered_epochs)
+    }
+  }
+  draw_eeg_epochs(summary_table, summary_eeg)
+  dwell_histogram(summary_table, experiment[[i]]$file_data, summary_table = T)
+  
   experiment
 }

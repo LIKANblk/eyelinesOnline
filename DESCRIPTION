@@ -15,7 +15,8 @@ Imports:
     sperrorest,
     R3,
     caret,
-    pROC
+    pROC,
+    reshape2
 Depends:
     Resonance,
     hybridEyeEEG,
@@ -24,4 +25,5 @@ Depends:
     sperrorest,
     R3,
     caret,
-    pROC
+    pROC,
+    reshape2
