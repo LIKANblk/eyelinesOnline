@@ -1,6 +1,4 @@
 process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, default_dwell, no_eeg) {
-  record <- list()
-  
   file_data$filename_edf <- filename_edf
   file_data$filename_r2e <- filename_r2e
   
@@ -16,25 +14,20 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     stop(paste0(filename_edf, ' has no ending! Game was finished before gameOver was sent'))
   }
   
+  file_data$eyelines_settings <- read_all_eyelines_parameters(eyetracking_messages)
   file_data$score <- as.numeric(str_filter(eyetracking_messages[grep('score', eyetracking_messages)], 'score\":([[:digit:]]+)')[[1]][2])
-  if ( str_filter(eyetracking_messages[grep('blockButtonX', eyetracking_messages)], 'blockButtonX\":([[:digit:]]+)')[[1]][2] == "1290" ){
+  if ( file_data$eyelines_settings$blockButtonX == 1290 ){
     file_data$button_position <- "right"
-  } else if(str_filter(eyetracking_messages[grep('blockButtonX', eyetracking_messages)], 'blockButtonX\":([[:digit:]]+)')[[1]][2] == "550") {
+  } else if( file_data$eyelines_settings$blockButtonX == 550 ) {
     file_data$button_position <- "left"
   } else {
     stop('Undefined button position!')
   }
   
-  file_data$quick_fixation_duration <- as.numeric(str_filter(eyetracking_messages[grep('quickFixationDuration', eyetracking_messages)], 'quickFixationDuration\":([[:digit:]]+)')[[1]][2])
-  file_data$delay_between_quick_fixations <- as.numeric(str_filter(eyetracking_messages[grep('delayBetweenQuickFixations', eyetracking_messages)], 'delayBetweenQuickFixations\":([[:digit:]]+)')[[1]][2])
-  file_data$long_fixation_duration <- as.numeric(str_filter(eyetracking_messages[grep('fixationDuration', eyetracking_messages)], 'fixationDuration\":([[:digit:]]+)')[[1]][2])
-  
-  
   game_data <- game_state_recoverer(eyetracking_data)
   file_data$game_recover <- game_data$scheme
   file_data$events_timestamps <- game_data$events_timestamps - sync_timestamp
-  record$file_data <- file_data
-  
+
   time = sapply(str_filter(game_data$game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]]))) - sync_timestamp
   field_type = sapply(str_filter(game_data$game_messages, 'type\":\"([[:alpha:]]+)'), function(i) (i[[2]]))
   field_type[grep('ballMove', field_type)] <- 'field'
@@ -90,29 +83,38 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events <- events[events$time<gameOver_time,]
   events <- events[-grep(paste(toMatch ,collapse="|"), events$field_type),]
   
+  
+  ## correct events$time to real fixation times
+  
+  long_fixations <- do.call(rbind, lapply(
+    str_filter(eyetracking_messages, '^fixation in region\\.center\\.x = ([0-9.]+), region.center.y = ([0-9.]+), time = ([0-9]+)$'),
+    function(str){
+      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp)
+    }))
+  quick_fixations <- do.call(rbind, lapply(
+    str_filter(eyetracking_messages, '^quick fixation in region\\.center\\.x = ([0-9.]+), region.center.y = ([0-9.]+), time = ([0-9]+)$'),
+    function(str){
+      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp)
+    }))
+  
+  times <- sort(c(quick_fixations$time, long_fixations$time))
+  events$time <- sapply(events$time, function(t){
+    time <- times[ which.min(times-t <=0 )-1 ]
+    t - time <= 100 || stop(sprintf("Too big variance between click event and game state change [ error time: %i %i ]", time, t))
+    time
+  })
+  
+  all_fixations <- rbind(long_fixations, quick_fixations)
+  
+  events$fixation_coords_x <- all_fixations$x[match(events$time, all_fixations$time)]
+  events$fixation_coords_y <- all_fixations$y[match(events$time, all_fixations$time)]
+  
+  
   if(file_data$record_type == 'test') {
     
     all_quick_fixations <- eyetracking_messages[grep('quick fixation', eyetracking_messages)]
     all_quick_fixations_time <- sapply(str_filter(all_quick_fixations, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp)
-    fixation_coords_x <- rep(0, length(events$time))
-    fixation_coords_y <- rep(0, length(events$time))
-    for ( i in 1: length(events$time)) {
-      if(events$time[i]> 0){
-        if(length(all_quick_fixations[sum(all_quick_fixations_time<events$time[i])])){
-          fixation_coords_x[i] <- as.numeric(str_filter(
-            all_quick_fixations[sum(all_quick_fixations_time<events$time[i])],
-            'x = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
-          fixation_coords_y[i] <- as.numeric(str_filter(
-            all_quick_fixations[sum(all_quick_fixations_time<events$time[i])],
-            'y = ([[:digit:]]+\\.?[[:digit:]]*)')[[1]][2]) 
-        } else {
-          next
-        }
-      }
-    }
     
-    events$fixation_coords_x = fixation_coords_x
-    events$fixation_coords_y = fixation_coords_y
     
     if(length(grep('report', eyetracking_messages))){
       reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - sync_timestamp
@@ -214,10 +216,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     
     windowWidth <- 1920
     windowHeight <- 1080
-    cellSize <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('cellSize', eyetracking_messages)], 'cellSize\":([[:digit:]]+)'))[2])
-    nCellsX <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('nCellsX', eyetracking_messages)], 'nCellsX\":([[:digit:]]+)'))[2])
-    nCellsY <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('nCellsY', eyetracking_messages)], 'nCellsY\":([[:digit:]]+)'))[2])
-    cellMargin <-  as.numeric(unlist(str_filter(eyetracking_messages[grep('cellMargin', eyetracking_messages)], 'cellMargin\":([[:digit:]]+)'))[2])
+    cellSize <-  file_data$eyelines_settings$cellSize
+    nCellsX <-  file_data$eyelines_settings$nCellsX
+    nCellsY <-  file_data$eyelines_settings$nCellsY
+    cellMargin <-  file_data$eyelines_settings$cellMargin
     true_negative_events <- c()
     for ( i in 1:length(true_negatives_in_events)){
       true_negative_events[i] <- getEventType(file_data$game_recover[[true_negatives_in_events[i]]],

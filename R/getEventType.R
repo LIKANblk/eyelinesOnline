@@ -8,6 +8,9 @@ getEventType <- function(game_state, x, y, windowWidth, windowHeight,
   if(iX >= 0 && iX < nCellsX &&
      iY >= 0 && iY < nCellsY){
     ind <- iX + iY * nCellsX
-  }
+  } 
+  
+  if(length(game_state[ind])) browser()
+  
   return(game_state[ind])
 }
