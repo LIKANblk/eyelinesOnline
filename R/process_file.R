@@ -236,7 +236,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
         true_negatives$field_type[i] = 'ball'
       }
     }
-   
+    
     events$dwell_time <- rep(1000, nrow(events))
     events$dwell_time[indicies[!is.na(indicies)]] <- (clusters$count[which(!is.na(indicies))]-1)*100+300
     events <- rbind(events, true_negatives)
@@ -244,8 +244,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     if(!no_eeg){
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     }
-
-   # dwell_histogram(events, file_data)
+    
+    # dwell_histogram(events, file_data)
   } else {
     events$dwell_time <- rep(default_dwell, nrow(events))
     true_negatives = c()
@@ -253,14 +253,16 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   get_eye_epochs <- function(current_time, current_dwell, xy) {
     res <- mapply(function(current_time, current_dwell) {
-      eyetracking_data$samples[[xy]][
-        (which(eyetracking_data$samples$time == current_time)+start_epoch) : (which(eyetracking_data$samples$time == current_time) + end_epoch + current_dwell)]
-    }, current_time, current_dwell)
+      if(which(eyetracking_data$samples$time == current_time) > abs(start_epoch)){
+        eyetracking_data$samples[[xy]][
+          (which(eyetracking_data$samples$time == current_time)+start_epoch) : (which(eyetracking_data$samples$time == current_time) + end_epoch + current_dwell)]
+      }
+    }
+    , current_time, current_dwell)
     t(res)
   }
   eye_epochs_x <- get_eye_epochs( events$time, events$dwell_time, 'x')
   eye_epochs_y <- get_eye_epochs( events$time, events$dwell_time, 'y')
   
-  save(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x,  eye_epochs_y = eye_epochs_y, true_negatives = true_negatives, file = gsub("r2e", "RData", filename_r2e))
   list(events = events, file_data = file_data, eeg_data = eeg_data, eye_epochs_x = eye_epochs_x, eye_epochs_y = eye_epochs_y,  true_negatives = true_negatives)
 }

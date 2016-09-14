@@ -1,4 +1,4 @@
-process_experiment <- function(path, start_epoch = -500, end_epoch = 1500, channels= c(1:5, 7, 9:21), A1=22, A2=23, low = F, high = 30,
+process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, channels= c(1:5, 7, 9:21), A1=22, A2=23, low = F, high = 30,
                                filename_classifier, default_dwell = 500, no_eeg = F){
   json <- fromJSON(file = paste0(path,"meta.json"))
   filename_classifier <- paste0(path, json$classifier)
@@ -24,8 +24,6 @@ process_experiment <- function(path, start_epoch = -500, end_epoch = 1500, chann
       summary_eeg <- c(summary_eeg, experiment[[i]]$eeg_data$filtered_epochs)
     }
   }
-  draw_eeg_epochs(summary_table, summary_eeg)
-  dwell_histogram(summary_table, experiment[[i]]$file_data, summary_table = T)
-  
-  experiment
+  save(summary_table = summary_table, summary_eeg = summary_eeg, file = paste0(path, "summary.RData"))
+  save(experiment = experiment, file = paste0(path, "experiment.RData"))
 }
