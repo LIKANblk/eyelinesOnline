@@ -1,4 +1,4 @@
-game_state_recoverer <- function(eyetracking_data)
+game_state_recoverer <- function(eyetracking_data, field_width, field_height)
 {
   lines <- eyetracking_data$events$message
   first_sync <- eyetracking_data$sync_timestamp
@@ -32,7 +32,7 @@ game_state_recoverer <- function(eyetracking_data)
                                                   events_timestamps >= start_game_timestamp &
                                                   events_timestamps <= end_game_timestamp ])
   
-  scheme <- generate_game_scheme(game_messages, events_timestamps)
+  scheme <- generate_game_scheme(game_messages, events_timestamps, field_width, field_height)
   list(scheme = scheme, move_durations = move_durations,
        events_timestamps = events_timestamps, game_messages = game_messages)
 }
@@ -45,13 +45,12 @@ game_state_recoverer <- function(eyetracking_data)
 
 
 
-generate_game_scheme <- function(game_messages, events_timestamps){
+generate_game_scheme <- function(game_messages, events_timestamps, field_width, field_height){
   game_states <- list()
   game_list_timestamps <- sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+  
+  m <- matrix(0, nrow = field_height, ncol = field_width)
   for (i in 1:length(events_timestamps)){
-    if(i == 1){
-      m <- matrix(0, nrow = 9, ncol = 9)
-    }
     actual_messages <- game_messages[which(game_list_timestamps %in% events_timestamps[i])]
     for ( ii in 1:length(actual_messages)){
       e <- str_filter(actual_messages[ii], 'type\\":\\"([[:alpha:]]+)')[[1]][2]
@@ -80,16 +79,7 @@ generate_game_scheme <- function(game_messages, events_timestamps){
         m[to_pos] <- color
       }
     }
-    game_states[[i]] <- m
-    if(i < length(events_timestamps)){
-      game_states[[i+1]] <- m
-    }
+    game_states[[i]] <- t(m)
   }
   game_states
-}
-
-get_position <- function(index) {
-  elemCol <- max(index %% 9, 1)
-  elemRow <- max(index / 9, 1)
-  c(elemRow, elemCol)
 }
