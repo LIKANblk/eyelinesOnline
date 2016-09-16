@@ -39,6 +39,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   field_type = sapply(str_filter(game_data$game_messages, 'type\":\"([[:alpha:]]+)'), function(i) (i[[2]]))
   field_type[grep('ballMove', field_type)] <- 'field'
   field_type[grep('ballSelect', field_type)] <- 'ball'
+  field_type[grep('ballDeselect', field_type)] <- 'ball'
   field_type[grep('ClickedToUnlock', field_type)] <- 'button'
   
   prev_field_position <- vector(mode = "numeric", length = length(time))

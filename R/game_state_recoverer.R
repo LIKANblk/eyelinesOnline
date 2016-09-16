@@ -13,7 +13,7 @@ game_state_recoverer <- function(eyetracking_data)
   end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
   
   events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
-  move_messages <- move_messages <- game_messages[grep(paste(c("ballMove", "ballSelect"),collapse="|"),game_messages)]
+  move_messages <- game_messages[grep(paste(c("ballMove", "ballSelect", "ballDeselect", "blockedMove"),collapse="|"),game_messages)]
   move_messages <- str_filter(move_messages, 'type\":\"([[:alpha:]]+).+time = ([[:digit:]]+)')
   move_messages <- data.frame(
     time = sapply(move_messages, function(x) as.numeric(x[[3]])),
@@ -23,7 +23,7 @@ game_state_recoverer <- function(eyetracking_data)
   n <- 1
   for (i in 1:nrow(move_messages)-1)
   {
-    if(move_messages[i,]$event == 'ballSelect' && move_messages[i+1,]$event == "ballMove"){
+    if(move_messages[i,]$event == 'ballSelect' && (move_messages[i+1,]$event == "ballMove" || move_messages[i+1,]$event == "blockedMove")){
       move_durations[n] = move_messages[i+1,]$time - move_messages[i,]$time
       n <- n + 1
     }
@@ -63,10 +63,14 @@ generate_game_scheme <- function(game_messages, events_timestamps){
         m[index] <- 0
       } else if(e == "ballSelect"){
         if(any(m > 100)){
-          m[which(m > 100)] = m[which(m > 100)] - 100
+          m[which(m > 100)] <- m[which(m > 100)] - 100
         }
         index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])+1
         m[index] <- m[index] + 100
+      } else if(e == "ballDeselect"){
+        if(any(m > 100)){
+          m[which(m > 100)] <- m[which(m > 100)] - 100
+        }
       } else if(e == "ballMove"){
         params <- as.numeric(unlist(str_filter(actual_messages[ii], 'from\\":([[:digit:]]+),\\"to\\":([[:digit:]]+)'))[c(2,3)])
         from_pos <- params[1]+1
