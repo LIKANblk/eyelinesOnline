@@ -24,7 +24,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     stop('Undefined button position!')
   }
   
-  game_data <- game_state_recoverer(eyetracking_data)
+  game_data <- game_state_recoverer(eyetracking_data, file_data$eyelines_settings$nCellsX, file_data$eyelines_settings$nCellsY)
   file_data$game_recover <- game_data$scheme
   file_data$events_timestamps <- game_data$events_timestamps - sync_timestamp
 

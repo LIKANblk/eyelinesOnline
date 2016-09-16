@@ -24,8 +24,6 @@ process_experiment <- function(path, start_epoch = -500, end_epoch = 1500, chann
       summary_eeg <- c(summary_eeg, experiment[[i]]$eeg_data$filtered_epochs)
     }
   }
-  draw_eeg_epochs(summary_table, summary_eeg)
-  dwell_histogram(summary_table, experiment[[i]]$file_data, summary_table = T)
-  
+
   experiment
 }
