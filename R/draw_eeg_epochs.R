@@ -1,13 +1,29 @@
-draw_eeg_epochs <- function(summary_table, summary_eeg, clf_response) {
+draw_eeg_epochs <- function(experiment, clf_response) {
   
-  smaller_epoch <- c()
-  for(i in 1:length(summary_eeg)) {
-    smaller_epoch[i] <- dim(summary_eeg[[i]])[1]
+  if(is.character(experiment)){
+    experiment <- 
+      if(file.exists(paste0(experiment, "/experiment.RData")))
+        load(paste0(experiment, "/experiment.RData"))$experiment
+      else
+        load(experiment)$experiment
   }
-  smaller_epoch <- min(smaller_epoch)
   
-  df_ball <- create_df_for_event('ball', summary_table, summary_eeg, smaller_epoch)
-  df_field <- create_df_for_event('field', summary_table, summary_eeg, smaller_epoch)
+  summary_table <- data.frame()
+  summary_eeg <- list()
+  for ( i in 1:length(experiment)) {
+    if(experiment[[i]]$file_data$record_type == 'test') {
+      summary_table <- rbind(summary_table, experiment[[i]]$events)
+      summary_eeg <- c(summary_eeg, experiment[[i]]$eeg_data$filtered_epochs)
+    }
+  }
+  
+  
+  df_ball <- melt_epochs('ball', summary_table, summary_eeg, clf_response)
+  df_field <- melt_epochs('field', summary_table, summary_eeg, clf_response)
+  
+  
+  
+  
   
   df_for_plot <- rbind(df_ball,df_field)
   colnames(df_for_plot) <- c('sample', 'channel', 'value', 'classifier_response', 'type')
@@ -28,21 +44,15 @@ draw_eeg_epochs <- function(summary_table, summary_eeg, clf_response) {
                    " field epochs"))
 }
 
-create_df_for_event <- function(event, summary_table, summary_eeg, smaller_epoch) {
-  epochs_true_positive <- melt_epochs(event, summary_table, summary_eeg, 'true_positive', smaller_epoch)
-  epochs_false_negative <- melt_epochs(event, summary_table, summary_eeg, 'false_negative',smaller_epoch)
-  epochs_true_negative <- melt_epochs(event, summary_table, summary_eeg, 'true_negative', smaller_epoch)
-  df <- rbind(epochs_true_positive, epochs_false_negative, epochs_true_negative)
-  df
-}
-
-melt_epochs <- function(event, summary_table, summary_eeg, classifier_response, smaller_epoch){
+melt_epochs <- function(event, summary_table, summary_eeg, classifier_response){
   
   epochs <- summary_eeg[which(summary_table$field_type == event &
                                 summary_table$classifier_response == classifier_response &
                                 summary_table$false_alarm == FALSE &
                                 summary_table$field_type != 'blockedMove')]
-  epochs <- lapply(epochs, function(x) { x[(nrow(x)-smaller_epoch+1):nrow(x), ]})
+  smaller_epoch <- Reduce(function(prev, x) min(prev, nrow(x)), epochs)
+  
+  epochs <- sapply(epochs, function(x) { x[(nrow(x)-smaller_epoch+1):nrow(x), ]})
   all_epochs <- array(unlist(epochs), dim = c(nrow(epochs[[1]]), ncol(epochs[[1]]), length(epochs)))
   mean_epochs <- apply(all_epochs, c(1,2), mean) - matrix(colMeans(mean_epochs), nrow=nrow(mean_epochs), ncol=ncol(mean_epochs), byrow = T)
   df <- melt(mean_epochs)

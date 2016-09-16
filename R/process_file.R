@@ -14,6 +14,12 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     stop(paste0(filename_edf, ' has no ending! Game was finished before gameOver was sent'))
   }
   
+  file_data$process_settings <- list(
+    start_epoch = start_epoch,
+    end_epoch = end_epoch,
+    default_dwell = default_dwell,
+    no_eeg = no_eeg
+  )
   file_data$eyelines_settings <- read_all_eyelines_parameters(eyetracking_messages)
   file_data$score <- as.numeric(str_filter(eyetracking_messages[grep('score', eyetracking_messages)], 'score\":([[:digit:]]+)')[[1]][2])
   if ( file_data$eyelines_settings$blockButtonX == 1290 ){
@@ -84,7 +90,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events <- events[events$time<gameOver_time,]
   events <- events[-grep(paste(toMatch ,collapse="|"), events$field_type),]
   
-  
   ## correct events$time to real fixation times
   
   long_fixations <- do.call(rbind, lapply(
@@ -99,6 +104,9 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     }))
   
   times <- sort(c(quick_fixations$time, long_fixations$time))
+  
+  eyetracking_event_times <- events$time
+  
   events$time <- sapply(events$time, function(t){
     time <- times[ which.min(times-t <=0 )-1 ]
     t - time <= 100 || stop(sprintf("Too big variance between click event and game state change [ error time: %i %i ]", time, t))
@@ -110,7 +118,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events$fixation_coords_x <- all_fixations$x[match(events$time, all_fixations$time)]
   events$fixation_coords_y <- all_fixations$y[match(events$time, all_fixations$time)]
   
-  
   if(file_data$record_type == 'test') {
     
     all_quick_fixations <- eyetracking_messages[grep('quick fixation', eyetracking_messages)]
@@ -120,7 +127,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     if(length(grep('report', eyetracking_messages))){
       reported_alarm <- sapply(str_filter(eyetracking_messages[grep('report', eyetracking_messages)], 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]])) - sync_timestamp
       for ( i in 1: length(reported_alarm)) {
-        events$false_alarm[sum(events$time<reported_alarm[i])] <- TRUE
+        events$false_alarm[sum(eyetracking_event_times<reported_alarm[i])] <- TRUE
       }
     } 
     
@@ -129,8 +136,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     true_positives <- true_positives[true_positives>0 & true_positives<gameOver_time]
     classifier_response <- rep(0, nrow(events))
     for ( i in 1:length(true_positives)) {
-      if((events$time[min(which(events$time >= true_positives[i]))] - true_positives[i]) < 75) {
-        classifier_response[min(which(events$time >= true_positives[i]))] <- 'true_positive'
+      if((eyetracking_event_times[min(which(eyetracking_event_times >= true_positives[i]))] - true_positives[i]) < 75) {
+        classifier_response[min(which(eyetracking_event_times >= true_positives[i]))] <- 'true_positive'
       }
     }
     
@@ -138,21 +145,13 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     false_negatives <- sapply(str_filter(false_negatives, 'time = ([[:digit:]]+)'), function(x) as.numeric(x[[2]]) - sync_timestamp)
     false_negatives <- false_negatives[false_negatives>0 & false_negatives<gameOver_time]
     for ( i in 1:length(false_negatives)) {
-      if((events$time[min(which(events$time >= false_negatives[i]))] - false_negatives[i]) < 75) {
-        classifier_response[min(which(events$time >= false_negatives[i]))] <- 'false_negative'
+      if((eyetracking_event_times[min(which(eyetracking_event_times >= false_negatives[i]))] - false_negatives[i]) < 75) {
+        classifier_response[min(which(eyetracking_event_times >= false_negatives[i]))] <- 'false_negative'
       }
     }
     
     events$classifier_response <- classifier_response
-    
-    dwell_times <- data.frame(time = events$time, type = events$classifier_response)
-    dwell_times <- rbind(
-      dwell_times,
-      data.frame(time = all_quick_fixations_time, type = rep('quick', length(all_quick_fixations_time))))
-    dwell_times <- dwell_times[order(dwell_times$time),]
-    dwell_times <- dwell_times[dwell_times$time > 0,]
-    
-    
+
     all_quick_fixations_time <- all_quick_fixations_time[all_quick_fixations_time>0]
     
     gap_between_short_fixations <- 130
@@ -183,7 +182,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     for ( i in 1:length(clusters$time)){
       if(length(which(events$time > clusters$time[i]))){
         cluster_index <- min(which(events$time > clusters$time[i]))
-        if(events$time[cluster_index] - clusters$time[i] <= 130){
+        if(events$time[cluster_index] - clusters$time[i] <= gap_between_short_fixations){
           indicies[i] <-cluster_index
         }
       }
@@ -248,11 +247,11 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     }
     
-    # dwell_histogram(events, file_data)
   } else {
     events$dwell_time <- rep(default_dwell, nrow(events))
     true_negatives = c()
   }
+  
   
   get_eye_epochs <- function(current_time, current_dwell, xy) {
     res <- mapply(function(current_time, current_dwell) {
