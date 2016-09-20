@@ -129,7 +129,7 @@ pipe.trof.classifier2 <- function(input, W, th, times, dur)
       SI.event()
     },
     online = function(windows){
-      lapply(windows, function(db){
+      ret <- lapply(windows, function(db){
         
         x <- matrix(nrow = length(ts_beg), ncol = ncol(db))
         
@@ -147,6 +147,8 @@ pipe.trof.classifier2 <- function(input, W, th, times, dur)
           NULL
         }
       })
+      
+      Filter(Negate(is.null), ret)
     }
   )
 }
@@ -176,7 +178,7 @@ pipe.trof.classifier.output <- function(input, W, th, times, dur)
         Q = X %*% W
         
         ret <- data.frame(Q=as.numeric(Q), passed=as.logical(Q<th), command=attr(db, 'byEvent'), command_time=attr(attr(db, 'byEvent'), 'TS')[[1]], time=attr(db, 'TS')[[1]])
-        attr(ret, 'TS') <- attr(attr(db, 'byEvent'), 'TS')
+        attr(ret, 'TS') <- if(ret$passed) attr(attr(db, 'byEvent'), 'TS') else NULL
         ret
       })
     }

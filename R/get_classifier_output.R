@@ -21,7 +21,7 @@ createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-sta
   
   rawEEG <- do.call(merge, Filter(function(x){ identical(SI(x), stream) },  data$blocks))
   
-  syncTS <- attr(rawEEG, 'TS')[ which(diff(rawEEG[,33])<0)[3]  ]
+  syncTS <- attr(rawEEG, 'TS')[ which(diff(bitwAnd(rawEEG[,33],2))==2)[3]  ]
   
   time_events <- source.events(rep('', length(times)), times*1E3+syncTS)
   
@@ -46,7 +46,7 @@ createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-sta
       ret <- eeg[times,]
       attr(ret, 'TS') <- attr(eeg, 'TS')[times]
       ret
-    }, epochs, dwell_time)
+    }, epochs, dwell_time[1:length(epochs)])
   }
   
   raw_epochs <- cutExcess(result$raw_epochs, dwell_time)

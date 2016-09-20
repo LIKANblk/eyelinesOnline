@@ -2,39 +2,72 @@ game_state_recoverer <- function(eyetracking_data, field_width, field_height)
 {
   lines <- eyetracking_data$events$message
   first_sync <- eyetracking_data$sync_timestamp
-  game_messages <- lines[grep('gm', lines)]
-  toMatch <- c('BoardPositionClicked', 'BoardClickedInBlockedMode', 'BallClickedInBlockedMode',
-               'BoardClickedInBlockedMode', 'random_block_starts', 'random_block_ends', 
-               'ReachedMaximumMovesQuantity')
-  game_messages <- game_messages[-grep(paste(toMatch ,collapse="|"), game_messages)]
+  
+  def <- function(x) if(is.null(x)) NaN else as.numeric(x)
+  
+  game <- do.call(rbind, lapply(str_filter(lines, 'gm (\\{.+\\}), time = ([0-9]+)'), function(X){
+    json <- fromJSON(X[[2]])
+    
+    data.frame(
+      type=json$type,
+      time= as.numeric(X[[3]])-first_sync,
+      from = def(json$from),
+      to = def(json$to),
+      color = def(json$color),
+      index = def(json$index)
+    )
+  }))
+  
+  start_game_timestamp <- game$time[game$type=="newGame"]
+  end_game_timestamp <- game$time[game$type=="gameOver"]
+  
+  game <- game[ game$time>=start_game_timestamp & game$time <= end_game_timestamp ,]
+  
 
+  moves <- game[game$type %in% c('ballSelect', 'ballMove', 'blockedMove'), c('type', 'time')]
   
-  start_game_timestamp <- as.numeric(str_filter(game_messages[grep('newGame', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
-  end_game_timestamp <- as.numeric(str_filter(game_messages[grep('gameOver', game_messages)], 'time = ([[:digit:]]+)')[[1]][[2]])
-  
-  events_timestamps <-  sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
-  move_messages <- game_messages[grep(paste(c("ballMove", "ballSelect", "ballDeselect", "blockedMove"),collapse="|"),game_messages)]
-  move_messages <- str_filter(move_messages, 'type\":\"([[:alpha:]]+).+time = ([[:digit:]]+)')
-  move_messages <- data.frame(
-    time = sapply(move_messages, function(x) as.numeric(x[[3]])),
-    event = sapply(move_messages, function(x) x[[2]])
-  )
-  move_durations <- vector()
-  n <- 1
-  for (i in 1:nrow(move_messages)-1)
+  move_durations <- c()
+  for (i in 1:nrow(moves)-1)
   {
-    if(move_messages[i,]$event == 'ballSelect' && (move_messages[i+1,]$event == "ballMove" || move_messages[i+1,]$event == "blockedMove")){
-      move_durations[n] = move_messages[i+1,]$time - move_messages[i,]$time
-      n <- n + 1
+    if(moves$type[i] == 'ballSelect' && (moves$type[i+1] == "ballMove" || moves$type[i+1] == "blockedMove")){
+      move_durations <- c(move_durations, moves$time[i+1] - moves$time[i])
     }
   }
-  events_timestamps <- unique(events_timestamps[events_timestamps >= 0 &
-                                                  events_timestamps >= start_game_timestamp &
-                                                  events_timestamps <= end_game_timestamp ])
   
-  scheme <- generate_game_scheme(game_messages, events_timestamps, field_width, field_height)
-  list(scheme = scheme, move_durations = move_durations,
-       events_timestamps = events_timestamps, game_messages = game_messages)
+  
+  states <- list()
+  times <- c()
+  time <- start_game_timestamp
+  
+  m <- matrix(0, nrow = field_height, ncol = field_width)
+  
+  by(game, 1:nrow(game), function(move){
+    
+    if(move$type == "ballCreate"){
+      m[move$index+1] <<- move$color
+    } else if (move$type == "ballRemove"){
+      m[move$index+1] <<- 0
+    } else if(move$type == "ballSelect"){
+      m[which(m > 100)] <<- m[which(m > 100)] - 100
+      m[move$index+1] <<- m[move$index+1] + 100
+    } else if(move$type == "ballDeselect"){
+      m[which(m > 100)] <<- m[which(m > 100)] - 100
+    } else if(move$type == "ballMove"){
+      from_pos <- move$from+1
+      to_pos <- move$to+1
+      color <- m[from_pos] - 100
+      m[from_pos] <<- 0
+      m[to_pos] <<- color
+    } else if(move$type %in% c('BoardPositionClicked', 'gameOver')) {
+      
+      states <<- c(states, list(t(m)))
+      times <<- c(times, time)
+      time <<- move$time
+    }
+  })
+
+  list(states = states, move_durations = move_durations,
+       times = times, moves=game)
 }
 
 # meaningful messages types:
@@ -45,41 +78,6 @@ game_state_recoverer <- function(eyetracking_data, field_width, field_height)
 
 
 
-generate_game_scheme <- function(game_messages, events_timestamps, field_width, field_height){
-  game_states <- list()
-  game_list_timestamps <- sapply(str_filter(game_messages, 'time = ([[:digit:]]+)'), function(i) (as.numeric(i[[2]])))
+generate_game_scheme <- function(game, field_width, field_height){
   
-  m <- matrix(0, nrow = field_height, ncol = field_width)
-  for (i in 1:length(events_timestamps)){
-    actual_messages <- game_messages[which(game_list_timestamps %in% events_timestamps[i])]
-    for ( ii in 1:length(actual_messages)){
-      e <- str_filter(actual_messages[ii], 'type\\":\\"([[:alpha:]]+)')[[1]][2]
-      if(e == "ballCreate"){
-        params <- as.numeric(unlist(str_filter(actual_messages[ii], 'color\\":([[:digit:]]),\\"index\\":([[:digit:]]+)'))[c(2,3)])
-        m[params[2]+1] <- params[1]
-      } else if (e == "ballRemove"){
-        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])+1
-        m[index] <- 0
-      } else if(e == "ballSelect"){
-        if(any(m > 100)){
-          m[which(m > 100)] <- m[which(m > 100)] - 100
-        }
-        index <- as.numeric(unlist(str_filter(actual_messages[ii], 'index\\":([[:digit:]]+)'))[c(2)])+1
-        m[index] <- m[index] + 100
-      } else if(e == "ballDeselect"){
-        if(any(m > 100)){
-          m[which(m > 100)] <- m[which(m > 100)] - 100
-        }
-      } else if(e == "ballMove"){
-        params <- as.numeric(unlist(str_filter(actual_messages[ii], 'from\\":([[:digit:]]+),\\"to\\":([[:digit:]]+)'))[c(2,3)])
-        from_pos <- params[1]+1
-        to_pos <- params[2]+1
-        color <- m[from_pos] - 100
-        m[from_pos] <- 0
-        m[to_pos] <- color
-      }
-    }
-    game_states[[i]] <- t(m)
-  }
-  game_states
 }
