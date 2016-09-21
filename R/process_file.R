@@ -176,19 +176,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     sum(reported_alarm >= X[1] & reported_alarm < X[2])>0
   })
   
-  # events$ball_color[events$field_type=='ball'] <- apply(time_pairs[events$field_type=='ball',], 1, function(X){
-  #   mv <- moves[moves$time>=X[1] & moves$time<X[2],]
-  #   mv <- mv[mv$type=='ballSelect', ]
-  #   t(
-  #     file_data$game_recover$states[[
-  #       tail(
-  #         which(file_data$game_recover$times<=mv$time),
-  #         n=1
-  #         )
-  #       ]]
-  #     )[mv$index+1]-100  # 100 is constant that marks selected ball
-  # })
-  
   events$field_position <- mapply(function(X,Y) get_field_index(X,Y, file_data$eyelines_settings), events$fixation_coords_x, events$fixation_coords_y, SIMPLIFY = TRUE);
   
   events$game_state <- apply(time_pairs, 1, function(X){
@@ -211,8 +198,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     
   }, events$time, events$fixation_coords_x, events$fixation_coords_y)
   
-  
   events$activation <- events$field_type!=''
+  events <- events[!(events$quick_fixation==FALSE & events$activation==FALSE),]
   
   events$ball_color <- mapply(
     function(index, state){
