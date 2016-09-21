@@ -232,7 +232,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   if(!no_eeg && filename_classifier!='' && file_data$record_type=='test'){
     eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
-    
     events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
   }
   

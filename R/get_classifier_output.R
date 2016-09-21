@@ -52,5 +52,5 @@ createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-sta
   raw_epochs <- cutExcess(result$raw_epochs, dwell_time)
   filtered_epochs <- cutExcess(result$filtered_epochs, dwell_time)
   
-  list(classifier_output = result.DF, raw_epochs = raw_epochs, filtered_epochs = filtered_epochs)
+  list(classifier_output = result.DF, raw_epochs = raw_epochs, filtered_epochs = filtered_epochs, sampling_rate = stream$samplingRate)
 }
