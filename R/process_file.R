@@ -119,7 +119,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
         field_type = NA,
         impossible_move = NA,
         dwell_after_click = NA,
-        dwell_time = clusters$count*file_data$eyelines_settings$delayBetweenQuickFixations + file_data$eyelines_settings$quickFixationDuration,
+        dwell_time = (clusters$count-1)*file_data$eyelines_settings$delayBetweenQuickFixations + file_data$eyelines_settings$quickFixationDuration,
         false_alarm = NA,
         ball_color = NA,
         field_position = NA,
