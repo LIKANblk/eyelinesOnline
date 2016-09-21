@@ -1,4 +1,10 @@
 dwell_histogram <- function(experiment, file_name = NULL) {
+  if(is.character(experiment)){
+    if(file.exists(paste0(experiment, "/experiment.RData")))
+      load(paste0(experiment, "/experiment.RData"))
+    else
+      load(experiment)
+  }
   
   if(is.null(file_name)){
     events <- data.frame()

@@ -36,19 +36,18 @@ draw_eeg_epochs <- function(experiment, clf_response) {
   
   
   df_for_plot <- rbind(df_ball,df_field)
-  colnames(df_for_plot) <- c('sample', 'channel', 'value', 't', 'classifier_response', 'type')
   to_string <- as_labeller(c(`1` = 'Fz',`2` = 'F3',`3` = 'F4',`4` = 'Cz',`5` = 'C3',
                              `6` = 'C4',`7` = 'Pz', `8` = 'P1',`9` = 'P2',`10` = 'P3',`11` = 'P4',
                              `12` = 'POz',`13` = 'PO3',`14` = 'PO4',`15` = 'PO7',`16` = 'PO8',
                              `17` = 'Oz',`18` = 'O1',`19` = 'O2', `20` ='HEOG', `21` ='VEOG'))
   
-  p <- ggplot(df_for_plot, aes(x=t, y=value))
-  p + geom_line(aes(colour = type)) +
+  ggplot(df_for_plot, aes(x=t, y=value)) +
+    geom_line(aes(colour = type)) +
     ylim(-25, 25) +
     ylab("") +
     xlab("") +
     facet_wrap( ~ channel, labeller = to_string) +
-    geom_vline(xintercept = max(df_for_plot$t) - end_epoch, colour="seagreen4") +
+    geom_vline(xintercept = 0, colour="seagreen4") +
     ggtitle(paste0("N of ", clf_response, " epochs = ", sum(summary_table$quick_fixation == qf &
                                                               summary_table$activation == act), '\n',
                    sum(summary_table$quick_fixation == qf & 
@@ -74,8 +73,13 @@ melt_epochs <- function(event, summary_table, summary_eeg, qf,
   mean_epochs <- apply(all_epochs, c(1,2), mean)
   mean_epochs <- mean_epochs - matrix(colMeans(mean_epochs), nrow=nrow(mean_epochs), ncol=ncol(mean_epochs), byrow = T)
   
-  df <- melt(mean_epochs)
-  df$t <- rep(seq(length=nrow(mean_epochs), to=end_epoch), max(df$Var2))
+  dimnames(mean_epochs) <- list(
+    seq(length=nrow(mean_epochs), to=end_epoch, by=1000/eeg_sRate),
+    1:ncol(mean_epochs)
+  )
+  
+  df <- melt(mean_epochs, varnames = c('t','channel'))
+
   df$classifier_response <- clf_response
   df$type <- event
   df

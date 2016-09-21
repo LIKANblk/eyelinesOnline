@@ -76,26 +76,3 @@ draw_eye_epochs <- function(experiment){
     ggtitle(paste0("Eye epochs in experiment ", str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]))
     
 }
-
-melt_eye_epochs <- function(event, summary_table, summary_xs, summary_ys, clf_response, end_epoch, eye_sampling_rate){
-  if(clf_response == "true_positive") {qf = T; act = T}
-  if(clf_response == "true_negative") {qf = T; act = F}
-  if(clf_response == 'false_negative') {qf = F; act = T}
-  epochs_x <- summary_xs[which(summary_table$field_type == event &
-                                 summary_table$quick_fixation == qf &
-                                 summary_table$activation == act &
-                                 summary_table$false_alarm == FALSE)]
-  epochs_y <-  summary_ys[which(summary_table$field_type == event &
-                                  summary_table$quick_fixation == qf &
-                                  summary_table$activation == act &
-                                  summary_table$false_alarm == FALSE)]
-  smallest_epoch <- Reduce(function(prev, x) min(prev, length(x)), epochs_x, init = Inf)
-  epochs_x <- lapply(epochs_x, function(x) { x[(length(x)-smallest_epoch+1):length(x) ]})
-  epochs_y <- lapply(epochs_y, function(x) { x[(length(x)-smallest_epoch+1):length(x) ]})
-  
-  mean_epochs_x <- colMeans(do.call(rbind, epochs_x), na.rm = T)
-  mean_epochs_y <- colMeans(do.call(rbind, epochs_y), na.rm = T)
-  
-  df <- data.frame(x = mean_epochs_x, y = mean_epochs_y, event = event, t = seq(length=length(mean_epochs_x), to=end_epoch)*1000/eye_sampling_rate, clf_response = clf_response)
-  df
-}
