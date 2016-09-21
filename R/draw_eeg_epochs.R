@@ -47,7 +47,7 @@ draw_eeg_epochs <- function(experiment, clf_response) {
     ylim(-25, 25) +
     ylab("") +
     xlab("") +
-    facet_wrap( ~ channel, labeller = to_string) +
+    facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
     geom_vline(xintercept = max(df_for_plot$t) - end_epoch, colour="seagreen4") +
     ggtitle(paste0("N of ", clf_response, " epochs = ", sum(summary_table$quick_fixation == qf &
                                                               summary_table$activation == act), '\n',
