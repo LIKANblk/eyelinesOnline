@@ -241,7 +241,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       ind <- which(eyetracking_data$samples$time==current_time)
       (length(ind)==1) || stop("Can't extract eye epoch")
       
-      eyetracking_data$samples[ (ind-(current_dwell-start_epoch)/1000*file_data$eye_sampling_rate) : (ind + end_epoch/1000*file_data$eye_sampling_rate-1) , c('x','y')]
+      eyetracking_data$samples[ max(1,(ind-(current_dwell-start_epoch)/1000*file_data$eye_sampling_rate)) : (ind + end_epoch/1000*file_data$eye_sampling_rate-1) , c('x','y')]
     }
     , events$time, events$dwell_time, SIMPLIFY = FALSE)
   

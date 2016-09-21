@@ -1,38 +1,61 @@
 draw_eye_epochs <- function(experiment){
+  if(is.character(experiment)){
+    if(file.exists(paste0(experiment, "/experiment.RData")))
+      load(paste0(experiment, "/experiment.RData"))
+    else
+      load(experiment)
+  }
   
   for(i in 1:length(experiment)){
     if(experiment[[i]]$file_data$record_type == 'test'){
       end_epoch <- experiment[[i]]$file_data$process_settings$end_epoch / 1000 * experiment[[i]]$eeg_data$sampling_rate 
-      eye_sampling_rate <- experiment[[1]]$file_data$
+      eye_sampling_rate <- experiment[[1]]$file_data$eye_sampling_rate
       break
     }
   }
   
-  if(is.character(experiment)){
-    experiment <- 
-      if(file.exists(paste0(experiment, "/experiment.RData")))
-        load(paste0(experiment, "/experiment.RData"))$experiment
-    else
-      load(experiment)$experiment
-  }
+  summary_list <- list()
   
-  summary_table <- data.frame()
-  summary_xs <- list()
-  summary_ys <- list()
-  for ( i in 1:length(experiment)) {
-    if(experiment[[i]]$file_data$record_type == 'test') {
-      summary_table <- rbind(summary_table, experiment[[i]]$events)
-      summary_xs <- c(summary_xs, experiment[[i]]$eye_epochs_x)
-      summary_ys <- c(summary_ys, experiment[[i]]$eye_epochs_y)
+  for(exp in experiment) {
+    for( i in 1:length(exp)){
+      E <- exp$events[i,]
+      eye <- exp$eye_data[[i]]
+      
+      
+      if(E$false_alarm) next
+        
+      clf_response= 
+        if(E$quick_fixation) { 
+          if(E$activation)
+            'true_positive'
+          else
+            'true_negative'
+        } else {
+          if(E$activation) 'false_negative'
+        }
+      
+      summary_list[[clf_response]] <- c(summary_list[[clf_response]], list(
+        data.frame(
+          t=seq(length=nrow(eye), to=end_epoch)*1000/eye_sampling_rate,
+          x = eye$x,
+          y= eye$y,
+          field_type=E$field_type
+        )
+      ))
     }
   }
-  
-  eye_epochs_ball_true_positive <- melt_eye_epochs('ball', summary_table, summary_xs, summary_ys, 'true_positive', end_epoch)
-  eye_epochs_field_true_positive <- melt_eye_epochs('field', summary_table, summary_xs, summary_ys, 'true_positive', end_epoch)
-  eye_epochs_ball_true_negative <- melt_eye_epochs('ball', summary_table, summary_xs, summary_ys, 'true_negative', end_epoch)
-  eye_epochs_field_true_negative <- melt_eye_epochs('field', summary_table, summary_xs, summary_ys, 'true_negative', end_epoch)
-  eye_epochs_ball_false_negative <- melt_eye_epochs('ball', summary_table, summary_xs, summary_ys, 'false_negative', end_epoch)
-  eye_epochs_field_false_negative <- melt_eye_epochs('field', summary_table, summary_xs, summary_ys, 'false_negative', end_epoch)
+
+  for(resp in unique(summary_table$clf_response))
+  {
+    sel <- summary_table[summary_table$clf_response==resp,]
+    
+    minT <- max(sapply(sel, function(X) min(X$t)))
+    
+    
+    
+  }
+
+
   
   df_for_plot <- rbind(eye_epochs_ball_true_positive, eye_epochs_field_true_positive,
                        eye_epochs_ball_true_negative, eye_epochs_field_true_negative,
@@ -44,7 +67,7 @@ draw_eye_epochs <- function(experiment){
     facet_grid(event ~ clf_response)
 }
 
-melt_eye_epochs <- function(event, summary_table, summary_xs, summary_ys, clf_response, end_epoch){
+melt_eye_epochs <- function(event, summary_table, summary_xs, summary_ys, clf_response, end_epoch, eye_sampling_rate){
   if(clf_response == "true_positive") {qf = T; act = T}
   if(clf_response == "true_negative") {qf = T; act = F}
   if(clf_response == 'false_negative') {qf = F; act = T}
@@ -63,6 +86,6 @@ melt_eye_epochs <- function(event, summary_table, summary_xs, summary_ys, clf_re
   mean_epochs_x <- colMeans(do.call(rbind, epochs_x), na.rm = T)
   mean_epochs_y <- colMeans(do.call(rbind, epochs_y), na.rm = T)
   
-  df <- data.frame(x = mean_epochs_x, y = mean_epochs_y, event = event, t = seq(length=length(mean_epochs_x), to=end_epoch), clf_response = clf_response)
+  df <- data.frame(x = mean_epochs_x, y = mean_epochs_y, event = event, t = seq(length=length(mean_epochs_x), to=end_epoch)*1000/eye_sampling_rate, clf_response = clf_response)
   df
 }
