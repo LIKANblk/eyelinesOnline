@@ -17,14 +17,14 @@ draw_eye_epochs <- function(experiment){
   summary_list <- list()
   
   for(exp in experiment) {
-    for( i in 1:length(exp)){
+    for( i in 1:nrow(exp$events)){
       E <- exp$events[i,]
       eye <- exp$eye_data[[i]]
       
       
       if(E$false_alarm) next
         
-      clf_response= 
+      clf_response <- 
         if(E$quick_fixation) { 
           if(E$activation)
             'true_positive'
@@ -34,37 +34,47 @@ draw_eye_epochs <- function(experiment){
           if(E$activation) 'false_negative'
         }
       
-      summary_list[[clf_response]] <- c(summary_list[[clf_response]], list(
+      summary_list[[clf_response]][[E$field_type]] <- c(summary_list[[clf_response]][[E$field_type]], list(
         data.frame(
           t=seq(length=nrow(eye), to=end_epoch)*1000/eye_sampling_rate,
           x = eye$x,
-          y= eye$y,
-          field_type=E$field_type
+          y= eye$y
         )
       ))
     }
   }
 
-  for(resp in unique(summary_table$clf_response))
-  {
-    sel <- summary_table[summary_table$clf_response==resp,]
-    
-    minT <- max(sapply(sel, function(X) min(X$t)))
-    
-    
-    
+  df_for_plot <- c()
+  
+  for(resp in names(summary_list)) {
+
+    for(event in names(summary_list[[resp]])){
+      data <- summary_list[[resp]][[event]]
+      
+      minT <- max(sapply(data, function(X) min(X$t)))
+      
+      N <- abind(lapply(data, function(X){
+        X[X$t >= minT,]
+      }), along=3)
+      
+      M <- rowMeans(N,T, dims=2)
+      dimnames(M) <- list(M[,'t'], c('t','x','y'))
+      
+      ret <- melt(M[,c('x','y')], value.name="coord")
+      colnames(ret) <- c('time', 'axis', 'coord')
+      ret$event = event
+      ret$clf_response = resp
+      
+      df_for_plot <- rbind(df_for_plot, ret)
+    }
   }
 
-
-  
-  df_for_plot <- rbind(eye_epochs_ball_true_positive, eye_epochs_field_true_positive,
-                       eye_epochs_ball_true_negative, eye_epochs_field_true_negative,
-                       eye_epochs_ball_false_negative, eye_epochs_field_false_negative)
-  ggplot(df_for_plot, aes(x=t)) + geom_line(aes(y=x, colour = "x")) + geom_line(aes(y=y, colour="y")) +
-    ylab("")+
+  ggplot(df_for_plot, aes(x=time, y=coord)) + geom_line(aes(group=axis,colour = axis))+
     geom_vline(xintercept = 0, colour="seagreen4") +
-    ggtitle(paste0("Eye epochs in experiment ", str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2])) +
-    facet_grid(event ~ clf_response)
+    facet_grid(event ~ clf_response) +
+    ylab("")+
+    ggtitle(paste0("Eye epochs in experiment ", str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]))
+    
 }
 
 melt_eye_epochs <- function(event, summary_table, summary_xs, summary_ys, clf_response, end_epoch, eye_sampling_rate){
