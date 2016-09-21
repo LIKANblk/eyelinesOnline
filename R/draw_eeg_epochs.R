@@ -13,7 +13,7 @@ draw_eeg_epochs <- function(experiment, clf_response) {
   
   for(exp in experiment){
     if(exp$file_data$record_type == 'test'){
-      eeg_sRate <- exp$eeg_data$sampling_rate
+      eeg_sRate <- exp$eeg_data$sampling_rate 
       end_epoch <- exp$file_data$process_settings$end_epoch
       break
     }
@@ -45,6 +45,8 @@ draw_eeg_epochs <- function(experiment, clf_response) {
   p <- ggplot(df_for_plot, aes(x=t, y=value))
   p + geom_line(aes(colour = type)) +
     ylim(-25, 25) +
+    ylab("") +
+    xlab("") +
     facet_wrap( ~ channel, labeller = to_string) +
     geom_vline(xintercept = max(df_for_plot$t) - end_epoch, colour="seagreen4") +
     ggtitle(paste0("N of ", clf_response, " epochs = ", sum(summary_table$quick_fixation == qf &
@@ -73,7 +75,7 @@ melt_epochs <- function(event, summary_table, summary_eeg, qf,
   mean_epochs <- mean_epochs - matrix(colMeans(mean_epochs), nrow=nrow(mean_epochs), ncol=ncol(mean_epochs), byrow = T)
   
   df <- melt(mean_epochs)
-  df$t <- rep((seq(length=nrow(mean_epochs), to=end_epoch)*1000/eeg_sRate), max(df$Var2))
+  df$t <- rep(seq(length=nrow(mean_epochs), to=end_epoch), max(df$Var2))
   df$classifier_response <- clf_response
   df$type <- event
   df
