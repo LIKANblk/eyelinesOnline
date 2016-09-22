@@ -36,16 +36,24 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     else if (events$quick_fixation[i] == FALSE && events$activation[i] == TRUE) events$classifier_response[i] <- "false_negative"
     else if (events$quick_fixation[i] == TRUE && events$activation[i] == FALSE) events$classifier_response[i] <- "true_negative"
   }
+  events$classifier_response[which(events$false_alarm)] <- 'false_alarm'
   
   
-  p <- ggplot(data=events[which(events$false_alarm != TRUE & events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
+  
+  p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
     geom_histogram(bins = (file_data$eyelines_settings$fixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations) -
                      (file_data$eyelines_settings$quickFixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations),
                    binwidth = file_data$eyelines_settings$delayBetweenQuickFixations, alpha = .9, colour = "#666666") + 
-    labs(title = pl_title) +
+    labs(title = paste0(pl_title, '\n', 'N of false negative (ball) = ',
+                        length(which(events$classifier_response != 'false_negative' & events$field_type == 'ball')),
+                        ' (field) = ',
+                        length(which(events$classifier_response != 'false_negative' & events$field_type == 'field')))) +
     labs(x="Dwell time", y="Count") +
-    facet_grid(classifier_response ~ field_type) + 
-    scale_fill_brewer(palette="Set2") 
+    facet_grid(field_type ~ classifier_response) + 
+    scale_fill_brewer(palette="Set2") +
+    xlab("") +
+    ylab("") +
+    theme(legend.position="none")
   #     scale_fill_manual(values=c("#F37748","#067BC2"))
   
   print(p)
