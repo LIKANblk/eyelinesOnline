@@ -23,7 +23,7 @@ draw_eye_epochs <- function(experiment){
       
       
       if(E$false_alarm) next
-        
+      
       clf_response <- 
         if(E$quick_fixation) { 
           if(E$activation)
@@ -43,11 +43,11 @@ draw_eye_epochs <- function(experiment){
       ))
     }
   }
-
+  
   df_for_plot <- c()
   
   for(resp in names(summary_list)) {
-
+    
     for(event in names(summary_list[[resp]])){
       data <- summary_list[[resp]][[event]]
       
@@ -68,11 +68,13 @@ draw_eye_epochs <- function(experiment){
       df_for_plot <- rbind(df_for_plot, ret)
     }
   }
-
+  df_for_plot$clf_response <- factor(df_for_plot$clf_response,
+                                       levels=c('true_positive','true_negative','false_negative'))
+  
   ggplot(df_for_plot, aes(x=time, y=coord)) + geom_line(aes(group=axis,colour = axis))+
     geom_vline(xintercept = 0, colour="seagreen4") +
     facet_grid(event ~ clf_response) +
     ylab("")+
     ggtitle(paste0("Eye epochs in experiment ", str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]))
-    
+  
 }

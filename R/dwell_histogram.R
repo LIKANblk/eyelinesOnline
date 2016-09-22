@@ -21,7 +21,7 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     }
     
     file_to_save <- paste(gsub("[[:digit:]]+.r2e", '', file_data$filename_r2e), "dwell_hist", "_", 'summary', '.jpg', sep="")
-    pl_title <- 'Histogram of dwell times before click'
+    pl_title <- paste0('Histogram of dwell times before click in exp. ', str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2])
   } else {
     filenames <- lapply(experiment, function(x) x$file_data$filename_r2e)
     events <- experiment[[grep(file_name,filenames)]]$events

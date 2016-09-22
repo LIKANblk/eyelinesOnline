@@ -28,45 +28,89 @@ draw_eeg_epochs <- function(experiment, clf_response) {
     }
   }
   
+  if(clf_response != 'false_negative'){
+    df_ball_small <- melt_epochs('ball', summary_table, summary_eeg,
+                                 qf, act, clf_response, end_epoch, eeg_sRate)
+    df_field_small <- melt_epochs('field', summary_table, summary_eeg,
+                                  qf, act, clf_response, end_epoch, eeg_sRate)
+    df_for_plot_small <- rbind(df_ball_small, df_field_small)
+    df_for_plot_small$type <- factor(df_for_plot_small$type, levels <- c('field', 'ball'))
+  }
   
-  df_ball <- melt_epochs('ball', summary_table, summary_eeg,
-                         qf, act, clf_response, end_epoch, eeg_sRate)
-  df_field <- melt_epochs('field', summary_table, summary_eeg,
-                          qf, act, clf_response, end_epoch, eeg_sRate)
+  df_ball_large <- melt_epochs('ball', summary_table, summary_eeg,
+                               qf, act, clf_response, end_epoch, eeg_sRate, large_dwell = T)
+  df_field_large <- melt_epochs('field', summary_table, summary_eeg,
+                                qf, act, clf_response, end_epoch, eeg_sRate, large_dwell = T)
+  df_for_plot_large <- rbind(df_ball_large, df_field_large)
+  df_for_plot_large$type <- factor(df_for_plot_large$type, levels <- c('field', 'ball'))
   
-  
-  df_for_plot <- rbind(df_ball,df_field)
   to_string <- as_labeller(c(`1` = 'Fz',`2` = 'F3',`3` = 'F4',`4` = 'Cz',`5` = 'C3',
                              `6` = 'C4',`7` = 'Pz', `8` = 'P1',`9` = 'P2',`10` = 'P3',`11` = 'P4',
                              `12` = 'POz',`13` = 'PO3',`14` = 'PO4',`15` = 'PO7',`16` = 'PO8',
                              `17` = 'Oz',`18` = 'O1',`19` = 'O2', `20` ='HEOG', `21` ='VEOG'))
   
-  ggplot(df_for_plot, aes(x=t, y=value)) +
+  if(clf_response != 'false_negative'){
+    p1 <- ggplot(df_for_plot_small, aes(x=t, y=value)) +
+      geom_line(aes(colour = type)) +
+      ylim(-25, 25) +
+      ylab("") +
+      xlab("") +
+      facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
+      geom_vline(xintercept = 0, colour="seagreen4") +
+      theme(legend.position="none") +
+      ggtitle(paste0(clf_response, '. ', 'Dwell < 600', '\n',
+                     sum(summary_table$quick_fixation == qf & 
+                           summary_table$activation == act &
+                           summary_table$dwell_time < 600 &
+                           summary_table$field_type == 'ball'),
+                     " ball epochs and " , 
+                     sum(summary_table$quick_fixation == qf &
+                           summary_table$activation == act & 
+                           summary_table$dwell_time < 600 &
+                           summary_table$field_type == 'field'),
+                     " field epochs"))
+  }
+  p2 <- ggplot(df_for_plot_large, aes(x=t, y=value)) +
     geom_line(aes(colour = type)) +
     ylim(-25, 25) +
     ylab("") +
     xlab("") +
     facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
     geom_vline(xintercept = 0, colour="seagreen4") +
-    ggtitle(paste0("N of ", clf_response, " epochs = ", sum(summary_table$quick_fixation == qf &
-                                                              summary_table$activation == act), '\n',
+    ggtitle(paste0(clf_response, '. ', 'Dwell >= 600', '\n',
                    sum(summary_table$quick_fixation == qf & 
-                         summary_table$activation == act & 
+                         summary_table$activation == act &
+                         summary_table$dwell_time >= 600 &
                          summary_table$field_type == 'ball'),
                    " ball epochs and " , 
                    sum(summary_table$quick_fixation == qf &
                          summary_table$activation == act & 
+                         summary_table$dwell_time >= 600 &
                          summary_table$field_type == 'field'),
                    " field epochs"))
+  
+  if(clf_response != 'false_negative'){
+    multiplot(p1, p2, cols=2)
+  } else {
+    p2
+  }
 }
 
 melt_epochs <- function(event, summary_table, summary_eeg, qf,
-                        act, clf_response, end_epoch, eeg_sRate){
+                        act, clf_response, end_epoch, eeg_sRate, large_dwell = F){
   
-  epochs <- summary_eeg[which(summary_table$field_type == event &
-                                summary_table$quick_fixation == qf &
-                                summary_table$activation == act &
-                                summary_table$false_alarm == FALSE)]
+  indicies <- which(summary_table$field_type == event &
+                      summary_table$quick_fixation == qf &
+                      summary_table$activation == act &
+                      summary_table$false_alarm == FALSE)
+  
+  if(large_dwell) {
+    indicies <- indicies[which(indicies %in% which(summary_table$dwell_time >= 600))]
+  } else {
+    indicies <- indicies[which(indicies %in% which(summary_table$dwell_time < 600))]
+  }
+  epochs <- summary_eeg[indicies]
+  
   smallest_epoch <- Reduce(function(prev, x) min(prev, nrow(x)), epochs, init = Inf)
   epochs <- lapply(epochs, function(x) { x[(nrow(x)-smallest_epoch+1):nrow(x), ]})
   all_epochs <- array(unlist(epochs), dim = c(nrow(epochs[[1]]), ncol(epochs[[1]]), length(epochs)))
@@ -79,7 +123,7 @@ melt_epochs <- function(event, summary_table, summary_eeg, qf,
   )
   
   df <- melt(mean_epochs, varnames = c('t','channel'))
-
+  
   df$classifier_response <- clf_response
   df$type <- event
   df
