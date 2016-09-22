@@ -37,7 +37,8 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     else if (events$quick_fixation[i] == TRUE && events$activation[i] == FALSE) events$classifier_response[i] <- "true_negative"
   }
   events$classifier_response[which(events$false_alarm)] <- 'false_alarm'
-  
+  events$classifier_response <- factor(events$classifier_response,
+                                       levels=c('false_negative','true_positive','true_negative','false_alarm'))
   
   
   p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
@@ -51,8 +52,8 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     labs(x="Dwell time", y="Count") +
     facet_grid(field_type ~ classifier_response) + 
     scale_fill_brewer(palette="Set2") +
-    xlab("") +
-    ylab("") +
+    xlab("milliseconds") +
+    ylab("count") +
     theme(legend.position="none")
   #     scale_fill_manual(values=c("#F37748","#067BC2"))
   
