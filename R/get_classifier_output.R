@@ -13,7 +13,7 @@ M[SI(FS2)$channels-3, SI(FS2)$channels-2 ] = -1
 M[SI(FS2)$channels-2, SI(FS2)$channels -0:2   ] = c(-1,1,0)
 FS2 <- pipe.spatial(FS2, M)
 filtered_epochs <- cross.windowizeByEvents(FS2, times, %1$i/1000*SI(FS)$samplingRate, %2$i/1000*SI(FS)$samplingRate) 
-createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-start_epoch, start_epoch))
+createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-start_epoch, start_epoch-max(dwell_time)))
   
   data <- readStructurized(filename_r2e)
   
@@ -42,7 +42,7 @@ createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-sta
   
   cutExcess <- function(epochs, dwell_time){
     mapply(function(eeg, len){
-      times <- 1:((len+end_epoch-start_epoch)/1000*SI(epochs)$samplingRate)
+      times <- seq(to=nrow(eeg), length=(len-start_epoch+end_epoch)/1000*SI(epochs)$samplingRate)
       ret <- eeg[times,]
       attr(ret, 'TS') <- attr(eeg, 'TS')[times]
       ret
