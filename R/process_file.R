@@ -226,7 +226,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   eye_epochs <- mapply(function(current_time, current_dwell) {
       ind <- which(eyetracking_data$samples$time==current_time)
-      (length(ind)==1) || stop("Can't extract eye epoch")
+      (length(ind)==1) || browser("Can't extract eye epoch")
       
       eyetracking_data$samples[ max(1,(ind-(current_dwell-start_epoch)/1000*file_data$eye_sampling_rate)) : (ind + end_epoch/1000*file_data$eye_sampling_rate-1) , c('x','y')]
     }

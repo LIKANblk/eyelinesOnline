@@ -12,7 +12,9 @@ process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, chan
     file_data$record_type <- json$'files'[[i]]$'record_type'
     file_data$inverse_move_order <- json$'inverse_move_order'
     
-    record <- process_file(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, no_eeg)
+    clf <- if(exists('classifier',json)) paste0(path,json$classifier) else filename_classifier
+    
+    record <- process_file(filename_edf, filename_r2e, file_data, clf, start_epoch, end_epoch, no_eeg)
     experiment[[i]] <- record 
     print(json$'files'[[i]]$name_eeg)
   }
