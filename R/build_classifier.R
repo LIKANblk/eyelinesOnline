@@ -43,7 +43,7 @@ print.eyelinesOnline_eeg_classifier <- function(x){
 library(Resonate)
 library(eyelinesOnline)
     
-res <- %s
+%s
 
 online_epoch_start <- min(res$bsln_start, res$times_seq[1])
 online_epoch_end <- max(res$bsln_end, (res$times_seq + res$decimation_window))
