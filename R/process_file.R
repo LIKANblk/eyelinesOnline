@@ -216,6 +216,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   unknownField <- events$field_type==''
   events$field_type[unknownField] <- c('ball', 'field')[is.na(events$ball_color[unknownField])+1]
+  events <- events[-events$time<0,]
   
   eeg_data <- list()
   
