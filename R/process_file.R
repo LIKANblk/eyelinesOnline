@@ -1,4 +1,4 @@
-process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, no_eeg,   gap_between_short_fixations = 130) {
+process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, no_eeg,   gap_between_short_fixations = 100) {
   file_data$filename_edf <- filename_edf
   file_data$filename_r2e <- filename_r2e
   file_data$filename_classifier <- filename_classifier
@@ -71,7 +71,9 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     
     last <- nrow(clusters)
     
-    if( (time - clusters$time[last])<= gap_between_short_fixations ){
+    if( (time - clusters$time[last])<= gap_between_short_fixations &&
+        abs( quick_fixations$x[quick_fixations$time == time] - quick_fixations$x[ quick_fixations$time == clusters$time[last] ] ) <= file_data$eyelines_settings$fixationRegionSize/2 &&
+        abs( quick_fixations$y[quick_fixations$time == time] - quick_fixations$y[ quick_fixations$time == clusters$time[last] ] ) <= file_data$eyelines_settings$fixationRegionSize/2 ){
       clusters[nrow(clusters), ] <- list(
         time=time, 
         count=clusters$count[last]+1, 
@@ -129,6 +131,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
         game_state = NA
       )
     )
+  }
+  if(any(events$dwell_time>1000))
+  {
+    browser();
   }
   events <- events[order(events$time),]
   

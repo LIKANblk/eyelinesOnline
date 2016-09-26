@@ -18,7 +18,9 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        bsln_start = bsln_start,
        bsln_end = bsln_end,
        times_seq = times_seq, 
-       decimation_window = decimation_window)
+       decimation_window = decimation_window,
+       target_epochs = dim(l$eegT)[[3]],
+       nontarget_epochs = dim(l$eegNT)[[3]],)
   
   #res
 #   cat("\n\n")

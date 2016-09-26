@@ -36,9 +36,12 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     else if (events$quick_fixation[i] == FALSE && events$activation[i] == TRUE) events$classifier_response[i] <- "false_negative"
     else if (events$quick_fixation[i] == TRUE && events$activation[i] == FALSE) events$classifier_response[i] <- "true_negative"
   }
-  events$classifier_response[which(events$false_alarm)] <- 'false_alarm'
+  events$classifier_response[which(events$false_alarm)] <- 'false_positive'
   events$classifier_response <- factor(events$classifier_response,
-                                       levels=c('false_negative','true_positive','true_negative','false_alarm'))
+                                       levels=c('false_negative','true_positive','true_negative','false_positive'))
+  
+  events <- events[events$classifier_response != 'false_negative',]
+  events$classifier_response = factor(events$classifier_response, levels=c('true_positive','true_negative','false_positive'))
   
   
   p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
@@ -49,15 +52,17 @@ dwell_histogram <- function(experiment, file_name = NULL) {
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'ball')),
                         ' (field) = ',
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'field')))) +
+    scale_x_continuous
     labs(x="Dwell time", y="Count") +
-    facet_grid(field_type ~ classifier_response) + 
+    facet_grid(field_type ~ classifier_response, drop = FALSE) + 
     scale_fill_brewer(palette="Set2") +
     xlab("milliseconds") +
     ylab("count") +
+    
     theme(legend.position="none")
   #     scale_fill_manual(values=c("#F37748","#067BC2"))
   
-  print(p)
   ggsave(filename = file_to_save, plot = p)
+  p
   
 }

@@ -1,4 +1,6 @@
-draw_eeg_epochs <- function(experiment, clf_response) {
+draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_negative', 'false_negative')) {
+  clf_response <- match.arg(clf_response)
+  
   
   if(is.character(experiment)){
     if(file.exists(paste0(experiment, "/experiment.RData")))
@@ -114,8 +116,8 @@ melt_epochs <- function(event, summary_table, summary_eeg, qf,
   smallest_epoch <- Reduce(function(prev, x) min(prev, nrow(x)), epochs, init = Inf)
   epochs <- lapply(epochs, function(x) { x[(nrow(x)-smallest_epoch+1):nrow(x), ]})
   all_epochs <- array(unlist(epochs), dim = c(nrow(epochs[[1]]), ncol(epochs[[1]]), length(epochs)))
-  mean_epochs <- apply(all_epochs, c(1,2), mean)
-  mean_epochs <- mean_epochs - matrix(colMeans(mean_epochs), nrow=nrow(mean_epochs), ncol=ncol(mean_epochs), byrow = T)
+  mean_epochs <- apply(all_epochs, c(1,2), mean, na.rm=TRUE)
+  mean_epochs <- mean_epochs - matrix(colMeans(mean_epochs, na.rm=TRUE), nrow=nrow(mean_epochs), ncol=ncol(mean_epochs), byrow = T)
   
   dimnames(mean_epochs) <- list(
     seq(length=nrow(mean_epochs), to=end_epoch, by=1000/eeg_sRate),

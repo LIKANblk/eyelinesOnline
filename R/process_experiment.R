@@ -10,12 +10,15 @@ process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, chan
     filename_r2e <- paste0(path, json$'files'[[i]]$name_eeg)
     
     file_data$record_type <- json$'files'[[i]]$'record_type'
+    
+    if(substr(file_data$record_type,0,2)=='! ') next;
+    
     file_data$inverse_move_order <- json$'inverse_move_order'
     
     clf <- if(exists('classifier',json)) paste0(path,json$classifier) else filename_classifier
     
     record <- process_file(filename_edf, filename_r2e, file_data, clf, start_epoch, end_epoch, no_eeg)
-    experiment[[i]] <- record 
+    experiment <- c(experiment, list(record))
     print(json$'files'[[i]]$name_eeg)
   }
   save(experiment = experiment, file = paste0(path, "/experiment.RData"))
