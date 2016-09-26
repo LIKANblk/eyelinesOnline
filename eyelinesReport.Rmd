@@ -1,0 +1,58 @@
+---
+title: "Experiment Report"
+author: "BCI Lab"
+output: pdf_document
+params:
+  path: character
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(eyelinesOnline)
+load(params$path)
+```
+
+## Experiment path
+```{r, echo=FALSE}
+str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]
+```
+
+## Dwells
+
+```{r}
+dwell_histogram(experiment)
+```
+
+\pagebreak
+
+## EEG Epochs
+
+### True positive epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs(experiment, 'true_positive')
+```
+
+\pagebreak
+
+### True negative epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs(experiment, 'true_negative')
+```
+
+\pagebreak
+
+### False negative epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs(experiment, 'false_negative')
+```
+
+\pagebreak
+
+## Eye speed epochs
+
+```{r fig.height=9, fig.width=12}
+draw_eye_epochs(experiment)
+```

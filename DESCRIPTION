@@ -16,7 +16,8 @@ Imports:
     R3,
     caret,
     pROC,
-    reshape2
+    reshape2,
+    rmarkdown
 Depends:
     Resonance,
     hybridEyeEEG,
@@ -26,4 +27,5 @@ Depends:
     R3,
     caret,
     pROC,
-    reshape2
+    reshape2,
+    rmarkdown

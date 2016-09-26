@@ -52,7 +52,6 @@ dwell_histogram <- function(experiment, file_name = NULL) {
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'ball')),
                         ' (field) = ',
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'field')))) +
-    scale_x_continuous
     labs(x="Dwell time", y="Count") +
     facet_grid(field_type ~ classifier_response, drop = FALSE) + 
     scale_fill_brewer(palette="Set2") +
@@ -62,7 +61,7 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     theme(legend.position="none")
   #     scale_fill_manual(values=c("#F37748","#067BC2"))
   
-  ggsave(filename = file_to_save, plot = p)
+  #   ggsave(filename = file_to_save, plot = p)
   p
   
 }

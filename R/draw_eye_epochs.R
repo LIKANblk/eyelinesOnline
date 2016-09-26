@@ -38,7 +38,8 @@ draw_eye_epochs <- function(experiment){
         data.frame(
           t=seq(length=nrow(eye), to=end_epoch)*1000/eye_sampling_rate,
           x = eye$x,
-          y= eye$y
+          y= eye$y,
+          speed = c(sqrt( (diff(eye$x)^2) + (diff(eye$y)^2) ), 0)
         )
       ))
     }
@@ -58,10 +59,11 @@ draw_eye_epochs <- function(experiment){
       }), along=3)
       
       M <- rowMeans(N,T, dims=2)
-      dimnames(M) <- list(M[,'t'], c('t','x','y'))
+      dimnames(M) <- list(M[,'t'], c('t','x','y','speed'))
       
-      ret <- melt(M[,c('x','y')], value.name="coord")
-      colnames(ret) <- c('time', 'axis', 'coord')
+      #ret <- melt(M[,c('speed')], value.name="coord")
+      #colnames(ret) <- c('time', 'axis', 'coord')
+      ret <- data.frame(time=M[,'t'], coord=M[,'speed'])
       ret$event = event
       ret$clf_response = resp
       
@@ -71,10 +73,11 @@ draw_eye_epochs <- function(experiment){
   df_for_plot$clf_response <- factor(df_for_plot$clf_response,
                                        levels=c('true_positive','true_negative','false_negative'))
   
-  ggplot(df_for_plot, aes(x=time, y=coord)) + geom_line(aes(group=axis,colour = axis))+
+  ggplot(df_for_plot, aes(x=time, y=coord)) + geom_line(aes(color = 1))+
     geom_vline(xintercept = 0, colour="seagreen4") +
     facet_grid(event ~ clf_response) +
-    ylab("")+
+    ylab("") +
+    theme(legend.position="none") +
     ggtitle(paste0("Eye epochs in experiment ", str_filter(experiment[[1]]$file_data$filename_edf, '.+/([[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]))
   
 }

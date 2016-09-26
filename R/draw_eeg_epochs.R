@@ -59,7 +59,7 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
       xlab("") +
       facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
       geom_vline(xintercept = 0, colour="seagreen4") +
-      theme(legend.position="none") +
+      theme(legend.position="none", plot.title = element_text(size=12)) +
       ggtitle(paste0(clf_response, '. ', 'Dwell < 600', '\n',
                      sum(summary_table$quick_fixation == qf & 
                            summary_table$activation == act &
@@ -79,6 +79,7 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
     xlab("") +
     facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
     geom_vline(xintercept = 0, colour="seagreen4") +
+    theme(legend.position="bottom", plot.title = element_text(size=12)) +
     ggtitle(paste0(clf_response, '. ', 'Dwell >= 600', '\n',
                    sum(summary_table$quick_fixation == qf & 
                          summary_table$activation == act &
