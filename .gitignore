@@ -3,3 +3,5 @@
 .Rbuildignore
 .RData
 .directory
+eyelinesReport.knit.md
+eyelinesReport.utf8.md

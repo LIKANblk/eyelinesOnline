@@ -50,14 +50,14 @@ dwell_histogram <- function(experiment, file_name = NULL) {
                    binwidth = file_data$eyelines_settings$delayBetweenQuickFixations, alpha = .9, colour = "#666666") + 
     labs(title = paste0(pl_title, '\n', 'N of false negative (ball) = ',
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'ball')),
-                        ' (field) = ',
+                        ' (cell) = ',
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'field')))) +
     labs(x="Dwell time", y="Count") +
     facet_grid(field_type ~ classifier_response, drop = FALSE) + 
     scale_fill_brewer(palette="Set2") +
     xlab("milliseconds") +
     ylab("count") +
-    
+    scale_x_continuous(limits = c(NA, 1000), breaks = c(300,400,500, 600, 700, 800, 900, 1000)) +
     theme(legend.position="none")
   #     scale_fill_manual(values=c("#F37748","#067BC2"))
   

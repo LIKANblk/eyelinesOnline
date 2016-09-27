@@ -51,6 +51,43 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
                              `12` = 'POz',`13` = 'PO3',`14` = 'PO4',`15` = 'PO7',`16` = 'PO8',
                              `17` = 'Oz',`18` = 'O1',`19` = 'O2', `20` ='HEOG', `21` ='VEOG'))
   
+  less_than_600_title <- paste0(clf_response, '. ', 'Dwell < 600', '\n',
+                                sum(summary_table$quick_fixation == qf & 
+                                      summary_table$activation == act &
+                                      summary_table$dwell_time < 600 &
+                                      summary_table$field_type == 'ball'),
+                                " ball epochs and " , 
+                                sum(summary_table$quick_fixation == qf &
+                                      summary_table$activation == act & 
+                                      summary_table$dwell_time < 600 &
+                                      summary_table$field_type == 'field'),
+                                " cell epochs")
+  if(clf_response != 'false_negative'){ 
+    more_than_600_title <- paste0(clf_response, '. ', 'Dwell >= 600', '\n',
+                                  sum(summary_table$quick_fixation == qf & 
+                                        summary_table$activation == act &
+                                        summary_table$dwell_time >= 600 &
+                                        summary_table$field_type == 'ball'),
+                                  " ball epochs and " , 
+                                  sum(summary_table$quick_fixation == qf &
+                                        summary_table$activation == act & 
+                                        summary_table$dwell_time >= 600 &
+                                        summary_table$field_type == 'field'),
+                                  " cell epochs")
+  } else {
+    more_than_600_title <- paste0(clf_response, '. ', 'Dwell == 1000', '\n',
+                                  sum(summary_table$quick_fixation == qf & 
+                                        summary_table$activation == act &
+                                        summary_table$dwell_time >= 600 &
+                                        summary_table$field_type == 'ball'),
+                                  " ball epochs and " , 
+                                  sum(summary_table$quick_fixation == qf &
+                                        summary_table$activation == act & 
+                                        summary_table$dwell_time >= 600 &
+                                        summary_table$field_type == 'field'),
+                                  " cell epochs")
+  }
+  
   if(clf_response != 'false_negative'){
     p1 <- ggplot(df_for_plot_small, aes(x=t, y=value)) +
       geom_line(aes(colour = type)) +
@@ -60,17 +97,8 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
       facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
       geom_vline(xintercept = 0, colour="seagreen4") +
       theme(legend.position="none", plot.title = element_text(size=12)) +
-      ggtitle(paste0(clf_response, '. ', 'Dwell < 600', '\n',
-                     sum(summary_table$quick_fixation == qf & 
-                           summary_table$activation == act &
-                           summary_table$dwell_time < 600 &
-                           summary_table$field_type == 'ball'),
-                     " ball epochs and " , 
-                     sum(summary_table$quick_fixation == qf &
-                           summary_table$activation == act & 
-                           summary_table$dwell_time < 600 &
-                           summary_table$field_type == 'field'),
-                     " field epochs"))
+      ggtitle(less_than_600_title) +
+      scale_color_manual(values = c("cyan4", "firebrick2"))
   }
   p2 <- ggplot(df_for_plot_large, aes(x=t, y=value)) +
     geom_line(aes(colour = type)) +
@@ -79,23 +107,25 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
     xlab("") +
     facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
     geom_vline(xintercept = 0, colour="seagreen4") +
-    theme(legend.position="bottom", plot.title = element_text(size=12)) +
-    ggtitle(paste0(clf_response, '. ', 'Dwell >= 600', '\n',
-                   sum(summary_table$quick_fixation == qf & 
-                         summary_table$activation == act &
-                         summary_table$dwell_time >= 600 &
-                         summary_table$field_type == 'ball'),
-                   " ball epochs and " , 
-                   sum(summary_table$quick_fixation == qf &
-                         summary_table$activation == act & 
-                         summary_table$dwell_time >= 600 &
-                         summary_table$field_type == 'field'),
-                   " field epochs"))
+    theme(plot.title = element_text(size=12),
+          legend.title=element_blank(),
+          legend.justification=c(1,0), legend.position=c(0.6,0)) +
+    ggtitle(more_than_600_title) +
+    scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
   
   if(clf_response != 'false_negative'){
     multiplot(p1, p2, cols=2)
   } else {
-    p2
+    pl_blank <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+      xlab("") +  ylab("") +
+      theme(axis.line=element_blank(),axis.text.x=element_blank(),
+            axis.text.y=element_blank(),axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.title.y=element_blank(),legend.position="none")
+    
+    multiplot(pl_blank, p2, cols=2)
   }
 }
 

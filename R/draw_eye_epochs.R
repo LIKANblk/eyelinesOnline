@@ -18,30 +18,32 @@ draw_eye_epochs <- function(experiment){
   
   for(exp in experiment) {
     for( i in 1:nrow(exp$events)){
-      E <- exp$events[i,]
-      eye <- exp$eye_data[[i]]
-      
-      
-      if(E$false_alarm) next
-      
-      clf_response <- 
-        if(E$quick_fixation) { 
-          if(E$activation)
-            'true_positive'
-          else
-            'true_negative'
-        } else {
-          if(E$activation) 'false_negative'
-        }
-      
-      summary_list[[clf_response]][[E$field_type]] <- c(summary_list[[clf_response]][[E$field_type]], list(
-        data.frame(
-          t=seq(length=nrow(eye), to=end_epoch)*1000/eye_sampling_rate,
-          x = eye$x,
-          y= eye$y,
-          speed = c(sqrt( (diff(eye$x)^2) + (diff(eye$y)^2) ), 0)
-        )
-      ))
+      if(length(exp$eye_data)) {
+        E <- exp$events[i,]
+        eye <- exp$eye_data[[i]]
+        
+        
+        if(E$false_alarm) next
+        
+        clf_response <- 
+          if(E$quick_fixation) { 
+            if(E$activation)
+              'true_positive'
+            else
+              'true_negative'
+          } else {
+            if(E$activation) 'false_negative'
+          }
+        
+        summary_list[[clf_response]][[E$field_type]] <- c(summary_list[[clf_response]][[E$field_type]], list(
+          data.frame(
+            t=seq(length=nrow(eye), to=end_epoch)*1000/eye_sampling_rate,
+            x = eye$x,
+            y= eye$y,
+            speed = c(sqrt( (diff(eye$x)^2) + (diff(eye$y)^2) ), 0)
+          )
+        ))
+      }
     }
   }
   
@@ -71,7 +73,7 @@ draw_eye_epochs <- function(experiment){
     }
   }
   df_for_plot$clf_response <- factor(df_for_plot$clf_response,
-                                       levels=c('true_positive','true_negative','false_negative'))
+                                     levels=c('true_positive','true_negative','false_negative'))
   
   ggplot(df_for_plot, aes(x=time, y=coord)) + geom_line(aes(color = 1))+
     geom_vline(xintercept = 0, colour="seagreen4") +

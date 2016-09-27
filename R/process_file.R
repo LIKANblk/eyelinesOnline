@@ -114,22 +114,22 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     cluster2quick = match(clusters$time, quick_fixations$time)
     
     events <- rbind(events,
-      data.frame(
-        time = clusters$time,
-        quick_fixation = TRUE,
-        activation = NA,
-        field_type = NA,
-        impossible_move = NA,
-        dwell_after_click = NA,
-        dwell_time = (clusters$count-1)*file_data$eyelines_settings$delayBetweenQuickFixations + file_data$eyelines_settings$quickFixationDuration,
-        false_alarm = NA,
-        ball_color = NA,
-        field_position = NA,
-        fixation_coords_x = quick_fixations$x[cluster2quick],
-        fixation_coords_y = quick_fixations$y[cluster2quick],
-        classifier_output = NA,
-        game_state = NA
-      )
+                    data.frame(
+                      time = clusters$time,
+                      quick_fixation = TRUE,
+                      activation = NA,
+                      field_type = NA,
+                      impossible_move = NA,
+                      dwell_after_click = NA,
+                      dwell_time = (clusters$count-1)*file_data$eyelines_settings$delayBetweenQuickFixations + file_data$eyelines_settings$quickFixationDuration,
+                      false_alarm = NA,
+                      ball_color = NA,
+                      field_position = NA,
+                      fixation_coords_x = quick_fixations$x[cluster2quick],
+                      fixation_coords_y = quick_fixations$y[cluster2quick],
+                      classifier_output = NA,
+                      game_state = NA
+                    )
     )
   }
   if(any(events$dwell_time>1000))
@@ -229,15 +229,16 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   if(!no_eeg && filename_classifier!='' && file_data$record_type=='test'){
     eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
-  }
-  
-  eye_epochs <- mapply(function(current_time, current_dwell) {
+    eye_epochs <- mapply(function(current_time, current_dwell) {
       ind <- which(eyetracking_data$samples$time==current_time)
       (length(ind)==1) || browser("Can't extract eye epoch")
       
       eyetracking_data$samples[ max(1,(ind-(current_dwell-start_epoch)/1000*file_data$eye_sampling_rate)) : (ind + end_epoch/1000*file_data$eye_sampling_rate-1) , c('x','y')]
     }
     , events$time, events$dwell_time, SIMPLIFY = FALSE)
+  } else {
+    eye_epochs <- list()
+  }
   
   list(events = events, file_data = file_data, eeg_data = eeg_data, eye_data = eye_epochs)
 }

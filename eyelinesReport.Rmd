@@ -19,7 +19,7 @@ str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:
 
 ## Dwells
 
-```{r}
+```{r fig.height=8, fig.width=12}
 dwell_histogram(experiment)
 ```
 
@@ -55,4 +55,8 @@ draw_eeg_epochs(experiment, 'false_negative')
 
 ```{r fig.height=9, fig.width=12}
 draw_eye_epochs(experiment)
+```
+
+```{r include=FALSE}
+remove(experiment)
 ```
