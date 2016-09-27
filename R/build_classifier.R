@@ -39,37 +39,42 @@ print.eyelinesOnline_eeg_classifier <- function(x){
   on.exit(close(con))
   
   cat(sprintf(
-    'library(Resonance)
-    library(Resonate)
-    library(eyelinesOnline)
-        
-    %s
+    '
+#################################################################
+# 
+# Target epochs:    %i
+# Nontarget epochs: %i
+#################################################################
+
+library(Resonance)
+library(Resonate)
+library(eyelinesOnline)
     
-    online_epoch_start <- min(res$bsln_start, res$times_seq[1])
-    online_epoch_end <- max(res$bsln_end, (res$times_seq + res$decimation_window))
-        
-    refs <- c(res$A1, res$A2)
+%s
+
+online_epoch_start <- min(res$bsln_start, res$times_seq[1])
+online_epoch_end <- max(res$bsln_end, (res$times_seq + res$decimation_window))
     
-    online_epoch_size <- online_epoch_end - online_epoch_start
-    online_epoch_shift <- online_epoch_start - 500
-    
-    times_seq <- res$times_seq - online_epoch_start
-    
-    bsln_start <- res$bsln_start - online_epoch_start
-    bsln_end <- res$bsln_end - online_epoch_start
-    target_epochs <- res$target_epochs
-    nontarget_epochs <- res$nontarget_epochs
-    
-    process = function(){
-    
-    FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=refs, channels=res$channels)
-    ev <- perform_time_correction(input(1), input(2))
-    RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_size/1000*SI(FS)$samplingRate, shift=online_epoch_shift/1000*SI(FS)$samplingRate)
-    RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end)/1000* SI(RA2)$samplingRate)
-    RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
-    RA5 <- filter_fast_events(RA4)
-    createOutput(RA5,"RES")
-    }', classStr
+refs <- c(res$A1, res$A2)
+
+online_epoch_size <- online_epoch_end - online_epoch_start
+online_epoch_shift <- online_epoch_start - 500
+
+times_seq <- res$times_seq - online_epoch_start
+
+bsln_start <- res$bsln_start - online_epoch_start
+bsln_end <- res$bsln_end - online_epoch_start
+
+process = function(){
+
+FS <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=refs, channels=res$channels)
+ev <- perform_time_correction(input(1), input(2))
+RA2 <- cross.windowizeByEvents(FS, ev, online_epoch_size/1000*SI(FS)$samplingRate, shift=online_epoch_shift/1000*SI(FS)$samplingRate)
+RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end)/1000* SI(RA2)$samplingRate)
+RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
+RA5 <- filter_fast_events(RA4)
+createOutput(RA5,"RES")
+}',res$target_epochs, res$nontarget_epochs, classStr
   ))
   
   invisible(x)
