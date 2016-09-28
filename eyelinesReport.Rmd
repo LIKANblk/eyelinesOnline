@@ -14,7 +14,16 @@ load(params$path)
 
 ## Experiment path
 ```{r, echo=FALSE}
-str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2]
+my_path <- paste0(str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2], '/')
+my_path
+```
+
+## Classifier parameters
+```{r, echo=FALSE}
+res <- buildClassifier(my_path)
+##eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
+paste0('Target epochs N = ', res$target_epochs, collapse = ' ')
+paste0('NonTarget epochs N = ', res$nontarget_epochs, collapse = ' ')
 ```
 
 ## Dwells
