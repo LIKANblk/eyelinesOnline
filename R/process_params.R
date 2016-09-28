@@ -20,29 +20,15 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
        times_seq = times_seq, 
        decimation_window = decimation_window,
        target_epochs = dim(l$eegT)[[3]],
-       nontarget_epochs = dim(l$eegNT)[[3]])
-  
-  #res
-#   cat("\n\n")
-#   dump(c("W", "th", "ufeats","channels", "low", "high", "A1", "A2", "sRate",
-#          "t", "bsln_start", "bsln_end", "pipe.trof.classifier", "pipe.medianWindow"), file = "")
-#   cat("RM <- diag(nrow=33)[channels,]",
-#       "FS <- pipeline(",
-#       " input(1),",
-#       " signalPreparation(, low=low, high=high, notch=50),",
-#       " pipe.spatial(, RM),",
-#       " pipe.references(, c(A1,A2))", 
-#       ")",
-#       "#createOutput('niceEEG', FS)",
-#       "createOutput('doClick',",
-#       "  pipeline(FS,",
-#       #      "    pipe.centering(, 500)", 
-#       "    pipe.decimate(, 1, 20 , coef_10000_to_500),", 
-#       "    cross.windowizeByEvents(, input(2), t/20, shift=-t/20),",
-#       "    pipe.medianWindow(, bsln_start/20, bsln_end/20),",
-#       "    pipe.trof.classifier(, W, th, ufeats )",
-#       "))", sep="\n")
-  
+       nontarget_epochs = dim(l$eegNT)[[3]],
+       
+       quality = list(
+         spec = params$spec,
+         sens = params$sens,
+         acc = params$acc,
+         auc = params$auc
+       )
+       )
 }
 
 

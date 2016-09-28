@@ -44,6 +44,20 @@ print.eyelinesOnline_eeg_classifier <- function(x){
 # 
 # Target epochs:    %i
 # Nontarget epochs: %i
+#
+# Specifity:
+#   Train: %.3f ± %.3f
+#   Test:  %.3f ± %.3f
+# Sensivity:
+#   Train: %.3f ± %.3f
+#   Test:  %.3f ± %.3f
+# Accuracy:
+#   Train: %.3f ± %.3f
+#   Test:  %.3f ± %.3f
+# AUC:
+#   Train: %.3f ± %.3f
+#   Test:  %.3f ± %.3f
+#   All:   %.3f ± %.3f
 #################################################################
 
 library(Resonance)
@@ -74,7 +88,23 @@ RA3 <- pipe.medianWindow(RA2, (bsln_start)/1000* SI(RA2)$samplingRate, (bsln_end
 RA4 <- pipe.trof.classifier2(RA3, res$W, res$th, times_seq/1000, res$decimation_window/1000)
 RA5 <- filter_fast_events(RA4)
 createOutput(RA5,"RES")
-}',res$target_epochs, res$nontarget_epochs, classStr
+}',
+    res$target_epochs, res$nontarget_epochs,
+    
+    cls$quality$spec$tr[1],  cls$quality$spec$tr[2],
+    cls$quality$spec$tst[1], cls$quality$spec$tst[2],
+    
+    cls$quality$sens$tr[1],  cls$quality$sens$tr[2],
+    cls$quality$sens$tst[1], cls$quality$sens$tst[2],
+    
+    cls$quality$acc$tr[1],  cls$quality$acc$tr[2],
+    cls$quality$acc$tst[1], cls$quality$acc$tst[2],
+    
+    cls$quality$auc$tr[1],  cls$quality$auc$tr[2],
+    cls$quality$auc$tst[1], cls$quality$auc$tst[2],
+    cls$quality$auc$all[1], cls$quality$auc$all[2],
+    
+    classStr
   ))
   
   invisible(x)

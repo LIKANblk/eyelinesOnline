@@ -18,13 +18,63 @@ my_path <- paste0(str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:di
 my_path
 ```
 
+## Dates
+Experiment date:
+Report creation date:
+
 ## Classifier parameters
 ```{r, echo=FALSE}
 res <- buildClassifier(my_path)
 ##eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
-paste0('Target epochs N = ', res$target_epochs, collapse = ' ')
-paste0('NonTarget epochs N = ', res$nontarget_epochs, collapse = ' ')
+
+sprintf('
+Target epochs:    %i
+Nontarget epochs: %i
+
+Specifity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Sensivity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Accuracy:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+AUC:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+   All:   %.3f ± %.3f
+
+',
+res$target_epochs, res$nontarget_epochs,
+res$quality$spec$tr[1],  res$quality$spec$tr[2],
+res$quality$spec$tst[1], res$quality$spec$tst[2],
+
+res$quality$sens$tr[1],  res$quality$sens$tr[2],
+res$quality$sens$tst[1], res$quality$sens$tst[2],
+
+res$quality$acc$tr[1],  res$quality$acc$tr[2],
+res$quality$acc$tst[1], res$quality$acc$tst[2],
+
+res$quality$auc$tr[1],  res$quality$auc$tr[2],
+res$quality$auc$tst[1], res$quality$auc$tst[2],
+res$quality$auc$all[1], res$quality$auc$all[2])
+
 ```
+
+Specifity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Sensivity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Accuracy:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+AUC:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+   All:   %.3f ± %.3f
 
 ## Dwells
 
