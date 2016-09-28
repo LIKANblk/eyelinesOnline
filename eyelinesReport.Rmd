@@ -9,6 +9,7 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(eyelinesOnline)
+library(knitr)
 load(params$path)
 ```
 
@@ -63,6 +64,41 @@ res$quality$auc$tst[1], res$quality$auc$tst[2],
 res$quality$auc$all[1], res$quality$auc$all[2]))
 
 ```
+
+```{r, include=FALSE}
+events <- data.frame()
+for ( i in 1:length(experiment)) {
+  if(experiment[[i]]$file_data$record_type == 'test') {
+    events <- rbind(events, experiment[[i]]$events)
+  }
+}
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'ball'))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
+FP_ball <- length(which(events$false_alarm == T & events$field_type == 'ball'))
+FP_cell <- length(which(events$false_alarm == T & events$field_type == 'field'))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
+
+
+df_for_table <- data.frame(type = c('ball', 'cell'),
+                           TP = c(TP_ball, TP_cell),
+                           TN = c(TN_ball, TN_cell),
+                           FP = c(FP_ball, FP_cell),
+                           FN = c(FN_ball, FN_cell),
+                           INTENT = c(TP_ball + FN_ball, TP_cell + FN_cell),
+                           SPONT = c(TN_ball + FP_ball, TN_cell + FP_cell),
+                           SENS = c((TP_ball / (TP_ball + FN_ball)), (TP_cell / (TP_cell + FN_cell))),
+                           SPEC = c((1 - (FP_ball / (TN_ball + FP_ball))), (1 - (FP_cell / (TN_cell + FP_cell)))))
+```
+
+## Classifier Response table
+
+``` {r, echo=FALSE}
+kable(df_for_table, format = 'markdown', align = 'l', digits = 3, padding = 4)
+```
+
 
 \pagebreak
 
