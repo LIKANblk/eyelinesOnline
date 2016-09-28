@@ -15,20 +15,22 @@ load(params$path)
 ## Experiment path
 ```{r, echo=FALSE}
 my_path <- paste0(str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2], '/')
-my_path
+cat(my_path)
 ```
 
 ## Dates
-Experiment date:
-Report creation date:
+```{r, echo=FALSE}
+experiment_date <- paste0('Experiment date: ', experiment[[1]]$file_data$date)
+report_date <- paste0('Report date: ', format(Sys.Date(), format="%d.%m.%Y"))
+cat(paste0(experiment_date, '\n', report_date))
+```
 
 ## Classifier parameters
 ```{r, echo=FALSE}
 res <- buildClassifier(my_path)
 ##eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
 
-sprintf('
-Target epochs:    %i
+cat(sprintf('Target epochs:    %i
 Nontarget epochs: %i
 
 Specifity:
@@ -58,23 +60,11 @@ res$quality$acc$tst[1], res$quality$acc$tst[2],
 
 res$quality$auc$tr[1],  res$quality$auc$tr[2],
 res$quality$auc$tst[1], res$quality$auc$tst[2],
-res$quality$auc$all[1], res$quality$auc$all[2])
+res$quality$auc$all[1], res$quality$auc$all[2]))
 
 ```
 
-Specifity:
-   Train: %.3f ± %.3f
-   Test:  %.3f ± %.3f
-Sensivity:
-   Train: %.3f ± %.3f
-   Test:  %.3f ± %.3f
-Accuracy:
-   Train: %.3f ± %.3f
-   Test:  %.3f ± %.3f
-AUC:
-   Train: %.3f ± %.3f
-   Test:  %.3f ± %.3f
-   All:   %.3f ± %.3f
+\pagebreak
 
 ## Dwells
 
@@ -118,4 +108,8 @@ draw_eye_epochs(experiment)
 
 ```{r include=FALSE}
 remove(experiment)
+remove(res)
+remove(my_path)
+remove(experiment_date)
+remove(report_date)
 ```

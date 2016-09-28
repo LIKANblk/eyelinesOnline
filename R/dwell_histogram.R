@@ -43,6 +43,10 @@ dwell_histogram <- function(experiment, file_name = NULL) {
   events <- events[events$classifier_response != 'false_negative',]
   events$classifier_response = factor(events$classifier_response, levels=c('true_positive','true_negative','false_positive'))
   
+  to_string <- as_labeller(c(`true_positive` = 'True Positive',
+                             `true_negative` = 'True Negative',
+                             `false_positive` ='False Positive',
+                             `ball` = 'Ball',`field` = 'Cell'))
   
   p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
     geom_histogram(bins = (file_data$eyelines_settings$fixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations) -
@@ -53,7 +57,7 @@ dwell_histogram <- function(experiment, file_name = NULL) {
                         ' (cell) = ',
                         length(which(events$classifier_response != 'false_negative' & events$field_type == 'field')))) +
     labs(x="Dwell time", y="Count") +
-    facet_grid(field_type ~ classifier_response, drop = FALSE) + 
+    facet_grid(field_type ~ classifier_response, drop = FALSE, labeller = to_string) + 
     scale_fill_brewer(palette="Set2") +
     xlab("milliseconds") +
     ylab("count") +

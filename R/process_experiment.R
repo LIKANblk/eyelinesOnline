@@ -10,6 +10,7 @@ process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, chan
     filename_r2e <- paste0(path, json$'files'[[i]]$name_eeg)
     
     file_data$record_type <- json$'files'[[i]]$'record_type'
+    file_data$date <- json$'date'
     
     if(substr(file_data$record_type,0,2)=='! ') next;
     
