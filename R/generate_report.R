@@ -3,7 +3,8 @@ generate_report <- function(number, folder=NULL){
     variants <- c(
       '~/tmp/newEyelinesOnline/',
       'd:/YandexDisk/eyelinesOnlineNew/',
-      '~/YandexDisk/eyelinesOnlineNew/'
+      '~/YandexDisk/eyelinesOnlineNew/',
+      '~/sources/eyelinesOnline/files/'
     )
     
     for(path in variants)
