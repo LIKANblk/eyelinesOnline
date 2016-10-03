@@ -29,10 +29,10 @@ buildClassifier <- function(path, epoch_size=1000,
 }
 
 
-print.eyelinesOnline_eeg_classifier <- function(x){
+print.eyelinesOnline_eeg_classifier <- function(cls){
   
   con <- file()
-  res <- x
+  res <- cls
   dump('res', file=con)
   classStr <- paste(readLines(con), sep = '', collapse='\n')
   
