@@ -28,7 +28,7 @@ cat(paste0(experiment_date, '\n', report_date))
 
 ## Classifier parameters
 ```{r, echo=FALSE}
-
+filename <- paste0(my_path, 'dump.txt')
 eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
 
 cat(sprintf('Target epochs:    %i
