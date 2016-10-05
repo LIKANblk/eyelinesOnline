@@ -52,12 +52,12 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   quick_fixations <- do.call(rbind, lapply(
     str_filter(eyetracking_messages, '^quick fixation in region\\.center\\.x = ([0-9.]+), region.center.y = ([0-9.]+), time = ([0-9]+)$'),
     function(str){
-      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp)
+      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp, activation=FALSE)
     }))
   received_click <- do.call(rbind, lapply(
     str_filter(eyetracking_messages, '^received click in x = ([0-9.]+), y = ([0-9.]+), time = ([0-9]+)$'),
     function(str){
-      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp)
+      data.frame(x=as.numeric(str[[2]]), y=as.numeric(str[[3]]), time= as.numeric(str[[4]]) - sync_timestamp, activation=TRUE)
     }))
   
   
@@ -65,38 +65,14 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   quick_fixations <- quick_fixations[ quick_fixations$time>gameBegin & quick_fixations$time < gameEnd, ]
   received_click <- received_click[ received_click$time>gameBegin & received_click$time < gameEnd, ]
   
-  ## combine quick fixations into clusters
-  clusters <- Reduce(function(clusters, time){
-    if(is.logical(clusters)) return( data.frame(time=time, count=1, times=I(list(time))) )
-    
-    last <- nrow(clusters)
-    
-    if( (time - clusters$time[last])<= gap_between_short_fixations &&
-        abs( quick_fixations$x[quick_fixations$time == time] - quick_fixations$x[ quick_fixations$time == clusters$time[last] ] ) <= file_data$eyelines_settings$fixationRegionSize/2 &&
-        abs( quick_fixations$y[quick_fixations$time == time] - quick_fixations$y[ quick_fixations$time == clusters$time[last] ] ) <= file_data$eyelines_settings$fixationRegionSize/2 ){
-      clusters[nrow(clusters), ] <- list(
-        time=time, 
-        count=clusters$count[last]+1, 
-        times=I( list( c(clusters$times[last][[1]], time) ))
-      )
-    } else {
-      clusters[nrow(clusters)+1,] <- list(
-        time=time,
-        count=1,
-        times=I(list(time))
-      )
-    }
-    clusters
-    
-  }, quick_fixations$time, FALSE)
+  file_data$quick_fixation_clusters <- FALSE
   
-  file_data$quick_fixation_clusters <- clusters
   
   events <- 
     data.frame(
       time = long_fixations$time,
       quick_fixation = FALSE,
-      activation = NA,
+      activation = TRUE,
       field_type = NA,
       impossible_move = NA,
       dwell_after_click = NA,
@@ -110,14 +86,69 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       game_state = NA
     )
   
-  if(!is.logical(clusters)){
-    cluster2quick = match(clusters$time, quick_fixations$time)
+  if(length(quick_fixations)>0){
+    
+    df <- rbind(quick_fixations, received_click)
+    df <- df[order(df$time),]
+    list2cluster <- lapply( split(df, seq_along(df[,1])), as.list)
+    
+    list2cluster <- Reduce(function(lst, fix){
+      if(is.logical(lst)) return( list(fix) )
+      
+      if(fix$activation){
+        last <- length(lst)
+        
+        A <- lst[[last]]
+        A$activation = TRUE
+        
+        c(lst[-last], list(A))
+        
+      } else {
+        c(lst, list(fix))
+      }
+    }, list2cluster, FALSE)
+    
+    ## combine quick fixations into clusters
+    clusters <- Reduce(function(clusters, fixation){
+      if(is.logical(clusters)) return( data.frame(time=fixation$time, count=1, activation=fixation$activation, x=fixation$x, y=fixation$y, times=I(list(fixation$time))) )
+      
+      last <- clusters[nrow(clusters),]
+      
+      if( (fixation$time - last$time)<= gap_between_short_fixations &&
+          abs( last$x - fixation$x ) <= file_data$eyelines_settings$fixationRegionSize/2 &&
+          abs( last$y - fixation$y ) <= file_data$eyelines_settings$fixationRegionSize/2 &&
+          last$activation == FALSE
+      ){
+        clusters[nrow(clusters), ] <- list(
+          time=fixation$time, 
+          count=last$count+1, 
+          activation = fixation$activation,
+          x = fixation$x,
+          y = fixation$y,
+          times=I( list( c(last$times[[1]], fixation$time) ))
+        )
+      } else {
+        clusters[nrow(clusters)+1,] <- list(
+          time=fixation$time,
+          count=1,
+          activation = fixation$activation,
+          x = fixation$x,
+          y = fixation$y,
+          times=I(list(fixation$time))
+        )
+      }
+      
+      clusters
+      
+    }, list2cluster, FALSE)
+    
+    file_data$quick_fixation_clusters <- clusters
     
     events <- rbind(events,
                     data.frame(
                       time = clusters$time,
                       quick_fixation = TRUE,
-                      activation = NA,
+                      activation = clusters$activation,
                       field_type = NA,
                       impossible_move = NA,
                       dwell_after_click = NA,
@@ -125,12 +156,13 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
                       false_alarm = NA,
                       ball_color = NA,
                       field_position = NA,
-                      fixation_coords_x = quick_fixations$x[cluster2quick],
-                      fixation_coords_y = quick_fixations$y[cluster2quick],
+                      fixation_coords_x = clusters$x,
+                      fixation_coords_y = clusters$y,
                       classifier_output = NA,
                       game_state = NA
                     )
     )
+    
   }
   if(any(events$dwell_time>1000))
   {
@@ -144,26 +176,26 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events$field_type <- apply(time_pairs, 1, function(X){
     types <- moves$type[moves$time>=X[1] & moves$time<X[2]]
     if(length(types)>=1){
-      
-      if(types[1] %in% c("ClickedToUnlock","ClickedToLock")) 
+
+      if(types[1] %in% c("ClickedToUnlock","ClickedToLock"))
         return('button')
-      
+
       if(types[1] == 'BallClickedInBlockedMode')
         return('ball')
       if(types[1] == 'BoardClickedInBlockedMode')
         return('field')
-      
+
       if(length(types)>=2){
-        
+
         (types[1]=="BoardPositionClicked") || stop('Strange move sequence')
-        
-        if(types[2] %in% c("ballSelect", "ballDeselect")) 
+
+        if(types[2] %in% c("ballSelect", "ballDeselect"))
           return('ball')
-        
-        if(types[2] %in% c('ballMove', 'blockedMove')) 
+
+        if(types[2] %in% c('ballMove', 'blockedMove'))
           return('field')
       }
-      
+
       if(types[1] == 'BoardPositionClicked')
         return('field')
     }
@@ -204,22 +236,24 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     
   }, events$time, events$fixation_coords_x, events$fixation_coords_y)
   
-  events$activation <- events$field_type!=''
-  events <- events[!(events$quick_fixation==FALSE & events$activation==FALSE),]
   
+   
   events$ball_color <- mapply(
     function(index, state){
       X <- t(file_data$game_recover$states[[state]])[index+1]
-      if(X==0){
-        NA 
+      if(is.na(X))
+      {
+        NA
+      } else if(X==0){
+        NA
       } else {
         if(X>100) X-100 else X
       }
-    }, 
+    },
     events$field_position,
     events$game_state
   )
-  
+
   unknownField <- events$field_type==''
   events$field_type[unknownField] <- c('ball', 'field')[is.na(events$ball_color[unknownField])+1]
   events <- events[-events$time<0,]

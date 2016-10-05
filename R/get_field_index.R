@@ -11,7 +11,7 @@ get_field_index <- function(x, y, settings){
   iY <- floor((y - BB.y)/ settings$cellSize)
   if(!( iX >= 0 && iX < settings$nCellsX &&
         iY >= 0 && iY < settings$nCellsY )){
-    NA
+    return(NA)
   }
   
   iX + iY*settings$nCellsX

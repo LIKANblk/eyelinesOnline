@@ -4,7 +4,7 @@ load_eye_data <- function(path, epoch_size, left_border,
   
   #setwd(path)
   
-  json <- fromJSON(file = paste0(path,"meta.json"))
+  json <- fromJSON(file = file.path(path,"meta.json"))
   
   eegT = c()
   eegNT = c()
