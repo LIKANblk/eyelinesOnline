@@ -170,6 +170,18 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   }
   events <- events[order(events$time),]
   
+  #remove TRUE NEGATIVES after wich long fixation presented
+  ind <- which(events$quick_fixation==TRUE & events$activation == FALSE)
+  ind <- ind[ind<nrow(events)]
+  ind <- ind[
+    events$quick_fixation[ind+1] == FALSE &
+    ((events$time[ind+1] - events$time[ind]) < 2*file_data$eyelines_settings$delayBetweenQuickFixations)
+  ]
+  
+  if(length(ind)>0){
+    events <- events[-ind, ]
+  }
+  
   
   time_pairs <- cbind( events$time, c(events$time[-1], Inf))
   
@@ -187,12 +199,17 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
 
       if(length(types)>=2){
 
-        (types[1]=="BoardPositionClicked") || stop('Strange move sequence')
+        ind <- which(types=="BoardPositionClicked")
+        if(length(ind)==0) {
+          stop('Strange move sequence')
+        } 
+        
+        ind <- ind[1]+1
 
-        if(types[2] %in% c("ballSelect", "ballDeselect"))
+        if(types[ind] %in% c("ballSelect", "ballDeselect"))
           return('ball')
 
-        if(types[2] %in% c('ballMove', 'blockedMove'))
+        if(types[ind] %in% c('ballMove', 'blockedMove'))
           return('field')
       }
 
