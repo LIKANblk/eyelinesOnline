@@ -1,5 +1,7 @@
 process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, channels= c(1:5, 7, 9:21), A1=22, A2=23, low = F, high = 30,
                                filename_classifier, no_eeg = F){
+  
+  path <- file.path(normalizePath(path), "")
   json <- fromJSON(file = paste0(path,"/meta.json"))
   filename_classifier <- paste0(path, json$classifier)
   experiment <- list()
