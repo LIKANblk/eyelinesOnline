@@ -107,5 +107,5 @@ createOutput(RA5,"RES")
     classStr
   ))
   
-  invisible(x)
+  invisible(cls)
 }
