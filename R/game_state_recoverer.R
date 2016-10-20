@@ -18,6 +18,13 @@ game_state_recoverer <- function(eyetracking_data, field_width, field_height)
     )
   }))
   
+  # workaround of bug in 09
+  if(game$time[1] > game$time[5]){
+    warning('Workaround for 09 experiment only');
+    game$time[1:4] <- 0
+  }
+  
+  
   start_game_timestamp <- game$time[game$type=="newGame"]
   end_game_timestamp <- game$time[game$type=="gameOver"]
   

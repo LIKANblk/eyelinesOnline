@@ -18,7 +18,7 @@ buildClassifier <- function(path, epoch_size=1000,
   # !!!TMP!!!
   
 
-  l <- load_eye_data(path, epoch_size, left_border, sRate,
+  l <- load_eye_data(normalizePath(path), epoch_size, left_border, sRate,
                     channels, A1,A2, low, high)
   
   ret <- process_params(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border, times_seq, decimation_window)
@@ -107,5 +107,5 @@ createOutput(RA5,"RES")
     classStr
   ))
   
-  invisible(x)
+  invisible(cls)
 }

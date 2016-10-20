@@ -39,7 +39,7 @@ cat(paste0('Scores = ', scores))
 
 ## Classifier parameters
 ```{r, echo=FALSE}
-filename <- paste0(my_path, 'dump.txt')
+filename <- file.path(dirname(params$path), 'dump.txt')
 eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
 
 cat(sprintf('Target epochs:    %i
