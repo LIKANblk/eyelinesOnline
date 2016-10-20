@@ -29,12 +29,14 @@ cat(paste0(experiment_date, '\n', report_date))
 ## Average scores
 ```{r, echo=FALSE}
 scores = 0
+n_files <- 0
 for ( i in 1:length(experiment)) {
   if(experiment[[i]]$file_data$score && experiment[[i]]$file_data$record_type != '! reading') {
     scores = scores + as.numeric(experiment[[i]]$file_data$score)
+    n_files <- n_files + 1
   }
 }
-cat(paste0('Scores = ', scores))
+cat(paste0('Scores = ', (scores / n_files)))
 ```
 
 ## Classifier parameters
