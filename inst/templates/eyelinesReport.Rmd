@@ -26,6 +26,17 @@ report_date <- paste0('Report date: ', format(Sys.Date(), format="%d.%m.%Y"))
 cat(paste0(experiment_date, '\n', report_date))
 ```
 
+## Average scores
+```{r, echo=FALSE}
+scores = 0
+for ( i in 1:length(experiment)) {
+  if(experiment[[i]]$file_data$score && experiment[[i]]$file_data$record_type != '! reading') {
+    scores = scores + as.numeric(experiment[[i]]$file_data$score)
+  }
+}
+cat(paste0('Scores = ', scores))
+```
+
 ## Classifier parameters
 ```{r, echo=FALSE}
 filename <- paste0(my_path, 'dump.txt')
