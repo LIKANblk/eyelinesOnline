@@ -1,22 +1,18 @@
 test_ks_value <- function(experiment){
   
-  data <- do.call(rbind,
-                  lapply(
-                    Filter(
-                      function(x) x$file_data$record_type == 'test' ,
-                      experiment
-                    ),
-                    '[[', 'events'
-                  )
-  )
+  data <- c()
+  passed <- 0
+  total <- 0
   
-  H <- hist(data$dwell_time[data$field_type=='ball' & data$classifier_response=='true_positive'], breaks = seq(200,900,100))
+  lapply(experiment, function(exp){
+    if(exp$file_data$record_type == 'test'){
+      data <<- c(data, diff(which(exp$eeg_data$classifierOut$passed))-1)
+      passed <<- passed + sum(exp$eeg_data$classifierOut$passed)
+      total <<- total + nrow(experiment[[8]]$eeg_data$classifierOut)
+    }
+  })
+
+  y = rnbinom(length(data), 1, passed/total)
   
-  
-  pbinom(7, 7, 0.13)
-  
-  ks.test(
-    H,
-  )
-  
+  KolmogorovSmirnov(data, y)
 }

@@ -4,6 +4,10 @@ get_classifier_output <- function(filename_r2e, filename_classifier, start_epoch
   classifier <- strRep(classifier, 'pipe.trof.classifier2', 'pipe.trof.classifier.output')
   classifier <- strRep(classifier, 'createOutput(RA5,"RES")',sprintf('
 createOutput(RA5,"RES")
+
+createOutput(RA4, "classifierOut")
+createOutput(input(2), "classifierIn")
+
 times <- input(4)
 raw_epoch <- cross.windowizeByEvents(input(1), times, %1$i/1000*SI(FS)$samplingRate, %2$i/1000*SI(FS)$samplingRate)
 createOutput(raw_epoch, "raw_epochs")
@@ -52,5 +56,15 @@ createOutput(filtered_epochs, "filtered_epochs")', max(dwell_time)+end_epoch-sta
   raw_epochs <- cutExcess(result$raw_epochs, dwell_time)
   filtered_epochs <- cutExcess(result$filtered_epochs, dwell_time)
   
-  list(classifier_output = result.DF, raw_epochs = raw_epochs, filtered_epochs = filtered_epochs, sampling_rate = stream$samplingRate)
+  classifierIn <- do.call(rbind, result$classifierIn)
+  classifierOut <- do.call(rbind, result$classifierOut)
+  
+  list(
+    classifier_output = result.DF, 
+    raw_epochs = raw_epochs, 
+    filtered_epochs = filtered_epochs, 
+    sampling_rate = stream$samplingRate,
+    classifierIn = classifierIn,
+    classifierOut = classifierOut
+    )
 }

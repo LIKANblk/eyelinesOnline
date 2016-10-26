@@ -124,7 +124,7 @@ DH
 
 ## ks.test
 ```{r}
-test_ks_value(DH)
+test_ks_value(experiment)
 ```
 
 \pagebreak
