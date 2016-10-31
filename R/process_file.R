@@ -39,8 +39,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   file_data$move_durations = game_recover$move_durations
   
   ## game begin and end
-  gameBegin <- moves$time[moves$type=='newGame']
-  gameEnd <- moves$time[moves$type=='gameOver']
+  gameBegin <- tail(moves$time[moves$type=='newGame'], n=1)
+  gameEnd <- tail(moves$time[moves$type=='gameOver'], n=1)
   
   ## correct events$time to real fixation times
   

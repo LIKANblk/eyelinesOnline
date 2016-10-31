@@ -25,8 +25,8 @@ game_state_recoverer <- function(eyetracking_data, field_width, field_height)
   }
   
   
-  start_game_timestamp <- game$time[game$type=="newGame"]
-  end_game_timestamp <- game$time[game$type=="gameOver"]
+  start_game_timestamp <- tail(game$time[game$type=="newGame"], n=1)
+  end_game_timestamp <- tail(game$time[game$type=="gameOver"], n=1)
   
   game <- game[ game$time>=start_game_timestamp & game$time <= end_game_timestamp ,]
   
