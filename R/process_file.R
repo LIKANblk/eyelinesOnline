@@ -291,5 +291,16 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     eye_epochs <- list()
   }
   
+  if(file_data$record_type == 'test' || file_data$record_type == '! random') {
+    #count how many times user changed his decision about ball selection
+    game_events <- eyetracking_messages[grep('gm', eyetracking_messages)]
+    game_events <- game_events[-grep('BoardPositionClicked', game_events)]
+    changed_selection <- sum(diff(grep('ballSelect', game_events)) == 1)
+  } else {
+    changed_selection <- NULL
+  }
+  
+  file_data$changed_selection <- changed_selection
+  
   list(events = events, file_data = file_data, eeg_data = eeg_data, eye_data = eye_epochs)
 }
