@@ -277,7 +277,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   eeg_data <- list()
   
-  if(!no_eeg && filename_classifier!='' && file_data$record_type=='test'){
+  if(!no_eeg && filename_classifier!='' && (file_data$record_type=='test')){
     eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
     events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
     eye_epochs <- mapply(function(current_time, current_dwell) {
@@ -291,7 +291,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     eye_epochs <- list()
   }
   
-  if(file_data$record_type == 'test' || file_data$record_type == '! random') {
+  if(file_data$record_type == 'test' || file_data$record_type == 'random') {
     #count how many times user changed his decision about ball selection
     game_events <- eyetracking_messages[grep('gm', eyetracking_messages)]
     game_events <- game_events[-grep('BoardPositionClicked', game_events)]

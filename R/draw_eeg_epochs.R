@@ -100,21 +100,35 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
       ggtitle(less_than_600_title) +
       scale_color_manual(values = c("cyan4", "firebrick2"))
   }
-  p2 <- ggplot(df_for_plot_large, aes(x=t, y=value)) +
-    geom_line(aes(colour = type)) +
-    ylim(-25, 25) +
-    ylab("") +
-    xlab("") +
-    facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
-    geom_vline(xintercept = 0, colour="seagreen4") +
-    theme(plot.title = element_text(size=12),
-          legend.title=element_blank(),
-          legend.justification=c(1,0), legend.position=c(0.6,0)) +
-    ggtitle(more_than_600_title) +
-    scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
-  
+  if(nrow(df_for_plot_large)){
+    p2 <- ggplot(df_for_plot_large, aes(x=t, y=value)) +
+      geom_line(aes(colour = type)) +
+      ylim(-25, 25) +
+      ylab("") +
+      xlab("") +
+      facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
+      geom_vline(xintercept = 0, colour="seagreen4") +
+      theme(plot.title = element_text(size=12),
+            legend.title=element_blank(),
+            legend.justification=c(1,0), legend.position=c(0.6,0)) +
+      ggtitle(more_than_600_title) +
+      scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
+  }
   if(clf_response != 'false_negative'){
-    multiplot(p1, p2, cols=2)
+    if(exists("p2")){
+      multiplot(p1, p2, cols=2)
+    } else {
+      pl_blank <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+        xlab("") +  ylab("") +
+        theme(axis.line=element_blank(),axis.text.x=element_blank(),
+              axis.text.y=element_blank(),axis.ticks=element_blank(),
+              axis.title.x=element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              axis.title.y=element_blank(),legend.position="none")
+      multiplot(p1, pl_blank, cols=2)
+    }
+    
   } else {
     pl_blank <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
       xlab("") +  ylab("") +
@@ -142,6 +156,13 @@ melt_epochs <- function(event, summary_table, summary_eeg, qf,
   } else {
     indicies <- indicies[which(indicies %in% which(summary_table$dwell_time < 600))]
   }
+  
+  if(length(indicies) == 0){
+    df <- data.frame(t = NA, channel = NA, value = NA, classifier_response = NA, type = NA)[numeric(0), ]
+    return(df)
+    break()
+  }
+  
   epochs <- summary_eeg[indicies]
   
   smallest_epoch <- Reduce(function(prev, x) min(prev, nrow(x)), epochs, init = Inf)

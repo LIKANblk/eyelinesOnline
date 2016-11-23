@@ -127,6 +127,24 @@ DH
 test_ks_value(experiment)
 ```
 
+## User changed selection and FAs
+```{r, echo=FALSE}
+for (i in 1:length(experiment)){
+  if(experiment[[i]]$file_data$record_type == 'test' || experiment[[i]]$file_data$record_type == 'random'){
+    if(!is.null(experiment[[i]]$file_data$changed_selection)) {
+      changed_selection <- experiment[[i]]$file_data$changed_selection
+    } else {
+      changed_selection <- 0
+    }
+    cat(
+      str_filter(experiment[[i]]$file_data$filename_r2e, '[[:digit:]]+.r2e')[[1]][1],
+      '(', experiment[[i]]$file_data$record_type,
+      ') - ', changed_selection, ' changed selection and '
+      , sum(experiment[[i]]$events$false_alarm), ' FA reported \n', sep = "")
+  }
+}
+```
+
 \pagebreak
 
 ## EEG Epochs
@@ -161,6 +179,9 @@ draw_eeg_epochs(experiment, 'false_negative')
 draw_eye_epochs(experiment)
 ```
 
+\pagebreak
+
+
 ```{r include=FALSE}
 remove(experiment)
 remove(res)
@@ -168,3 +189,4 @@ remove(my_path)
 remove(experiment_date)
 remove(report_date)
 ```
+
