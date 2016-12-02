@@ -54,7 +54,7 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
       geom_histogram(bins = (file_data$eyelines_settings$fixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations) -
                        (file_data$eyelines_settings$quickFixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations),
-                     binwidth = bw, alpha = .9, colour = "#666666") + 
+                     binwidth = file_data$eyelines_settings$delayBetweenQuickFixations, alpha = .9, colour = "#666666") + 
       labs(title = paste0(pl_title, '\n', 'N of false negative (ball) = ',
                           length(which(false_negatives$field_type == 'ball')),
                           ' (cell) = ',
