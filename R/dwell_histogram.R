@@ -49,24 +49,41 @@ dwell_histogram <- function(experiment, file_name = NULL) {
                              `false_positive` ='False Positive',
                              `ball` = 'Ball',`field` = 'Cell'))
   
-  p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
-    geom_histogram(bins = (file_data$eyelines_settings$fixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations) -
-                     (file_data$eyelines_settings$quickFixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations),
-                   binwidth = file_data$eyelines_settings$delayBetweenQuickFixations, alpha = .9, colour = "#666666") + 
-    labs(title = paste0(pl_title, '\n', 'N of false negative (ball) = ',
-                        length(which(false_negatives$field_type == 'ball')),
-                        ' (cell) = ',
-                        length(which(false_negatives$field_type == 'field')))) +
-    labs(x="Dwell time", y="Count") +
-    facet_grid(field_type ~ classifier_response, drop = FALSE, labeller = to_string) + 
-    scale_fill_brewer(palette="Set2") +
-    xlab("milliseconds") +
-    ylab("count") +
-    scale_x_continuous(limits = c(NA, 1000), breaks = c(300,400,500, 600, 700, 800, 900, 1000)) +
-    theme(legend.position="none")
-  #     scale_fill_manual(values=c("#F37748","#067BC2"))
+  if(file_data$eyelines_settings$delayBetweenQuickFixations == 100){
   
-  #   ggsave(filename = file_to_save, plot = p)
+    p <- ggplot(data=events[which(events$classifier_response != 'false_negative'),], aes(x = dwell_time, fill = field_type)) + 
+      geom_histogram(bins = (file_data$eyelines_settings$fixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations) -
+                       (file_data$eyelines_settings$quickFixationDuration / file_data$eyelines_settings$delayBetweenQuickFixations),
+                     binwidth = bw, alpha = .9, colour = "#666666") + 
+      labs(title = paste0(pl_title, '\n', 'N of false negative (ball) = ',
+                          length(which(false_negatives$field_type == 'ball')),
+                          ' (cell) = ',
+                          length(which(false_negatives$field_type == 'field')))) +
+      labs(x="Dwell time", y="Count") +
+      facet_grid(field_type ~ classifier_response, drop = FALSE, labeller = to_string) + 
+      scale_fill_brewer(palette="Set2") +
+      xlab("milliseconds") +
+      ylab("count") +
+      scale_x_continuous(limits = c(NA, 1000), breaks = sort(unique(events$dwell_time))) +
+      theme(legend.position="none")
+    #     scale_fill_manual(values=c("#F37748","#067BC2"))
+    
+    #   ggsave(filename = file_to_save, plot = p)
+  } else {
+    p <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+      xlab("") +  ylab("") +
+      labs(title = paste0("Single classifier try in this record",
+                          '\n', 'N of false negative (ball) = ',
+                          length(which(false_negatives$field_type == 'ball')),
+                          ' (cell) = ',
+                          length(which(false_negatives$field_type == 'field')))) +
+      theme(axis.line=element_blank(),axis.text.x=element_blank(),
+            axis.text.y=element_blank(),axis.ticks=element_blank(),
+            axis.title.x=element_blank(),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.title.y=element_blank(),legend.position="none")
+  }
   p
   
 }

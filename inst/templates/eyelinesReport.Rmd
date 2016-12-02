@@ -17,10 +17,7 @@ load(params$path)
 ```{r, echo=FALSE}
 my_path <- paste0(str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2], '/')
 cat(my_path)
-```
 
-## Dates
-```{r, echo=FALSE}
 experiment_date <- paste0('Experiment date: ', experiment[[1]]$file_data$date)
 report_date <- paste0('Report date: ', format(Sys.Date(), format="%d.%m.%Y"))
 cat(paste0(experiment_date, '\n', report_date))
@@ -28,7 +25,7 @@ cat(paste0(experiment_date, '\n', report_date))
 
 ## Average scores
 ```{r, echo=FALSE}
-cat(paste0('Scores = ', mean(
+cat(paste0('Scores = ', format(mean(
   sapply(
     Filter(
       function(x) x$file_data$score && x$file_data$record_type %in% c('train','test') ,
@@ -36,7 +33,7 @@ cat(paste0('Scores = ', mean(
     ),
     function(x) x$file_data$score
   )
-)))
+), digits = 2)))
 ```
 
 ## Classifier parameters
@@ -110,6 +107,48 @@ df_for_table <- data.frame(type = c('ball', 'cell'),
 
 ``` {r, echo=FALSE}
 kable(df_for_table, format = 'markdown', align = 'l', digits = 3, padding = 4)
+remove(df_for_table)
+```
+
+```{r, include=FALSE}
+events <- data.frame()
+for ( i in 1:length(experiment)) {
+  if(experiment[[i]]$file_data$record_type == 'random') {
+    events <- rbind(events, experiment[[i]]$events)
+  }
+}
+if(length(events)){
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'ball'))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
+FP_ball <- length(which(events$false_alarm == T & events$field_type == 'ball'))
+FP_cell <- length(which(events$false_alarm == T & events$field_type == 'field'))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
+
+
+df_for_table <- data.frame(type = c('ball', 'cell'),
+                           TP = c(TP_ball, TP_cell),
+                           TN = c(TN_ball, TN_cell),
+                           FP = c(FP_ball, FP_cell),
+                           FN = c(FN_ball, FN_cell),
+                           INTENT = c(TP_ball + FN_ball, TP_cell + FN_cell),
+                           SPONT = c(TN_ball + FP_ball, TN_cell + FP_cell),
+                           SENS = c((TP_ball / (TP_ball + FN_ball)), (TP_cell / (TP_cell + FN_cell))),
+                           SPEC = c((1 - (FP_ball / (TN_ball + FP_ball))), (1 - (FP_cell / (TN_cell + FP_cell)))))
+}
+```
+
+
+## Random Response table
+
+``` {r, echo=FALSE}
+if(exists('df_for_table')){
+  kable(df_for_table, format = 'markdown', align = 'l', digits = 3, padding = 4)
+} else {
+  cat('No records with random classifier were made')
+}
 ```
 
 
