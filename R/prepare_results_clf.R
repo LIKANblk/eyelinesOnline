@@ -1,4 +1,4 @@
-extract_clf_results <- function(path, ball_only = F){
+prepare_results_clf <- function(path, ball_only = F) {
   load(path)
   
   test_table <- data.frame()
@@ -19,9 +19,6 @@ extract_clf_results <- function(path, ball_only = F){
   if(ball_only) {
     test_table <- test_table[test_table$field_type == 'ball', ]
     random_table <- random_table[random_table$field_type == 'ball', ]
-  } else {
-    test_table <- test_table[test_table$field_type == 'field', ]
-    random_table <- random_table[random_table$field_type == 'field', ]
   }
   
   normal_TP <- sum(test_table$activation == T & test_table$quick_fixation == T)
@@ -35,14 +32,10 @@ extract_clf_results <- function(path, ball_only = F){
   random_FP <- sum(random_table$false_alarm == T)
   random_FN <- sum(random_table$activation == T & random_table$dwell_time == 1000)
   
-  df_for_table <- data.frame(normal_TP = normal_TP, normal_TN = normal_TN,
-                             normal_FP = normal_FP, normal_FN = normal_FN,
-                             random_TP = random_TP, random_TN = random_TN,
-                             random_FP = random_FP, random_FN = random_FN)
-  
-  print(kable(df_for_table, align = 'r', digits = 3, padding = 2))
-  
-  remove(experiment)
-  
-  df_for_table
+  df_fo_plot_test <- data.frame(type = c('TP', 'TN', 'FP', 'FN'),
+                                clf_count = c(normal_TP, normal_TN, normal_FP, normal_FN))
+  df_fo_plot_random <- data.frame(type = c('TP', 'TN', 'FP', 'FN'), 
+                                  clf_count = c(random_TP, random_TN, random_FP, random_FN))
+  l <- list(normal = df_fo_plot_test, random = df_fo_plot_random)
+  l
 }
