@@ -175,8 +175,8 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   ind <- ind[ind<nrow(events)]
   ind <- ind[
     events$quick_fixation[ind+1] == FALSE &
-    ((events$time[ind+1] - events$time[ind]) < 2*file_data$eyelines_settings$delayBetweenQuickFixations)
-  ]
+      ((events$time[ind+1] - events$time[ind]) < 2*file_data$eyelines_settings$delayBetweenQuickFixations)
+    ]
   
   if(length(ind)>0){
     events <- events[-ind, ]
@@ -188,31 +188,31 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   events$field_type <- apply(time_pairs, 1, function(X){
     types <- moves$type[moves$time>=X[1] & moves$time<X[2]]
     if(length(types)>=1){
-
+      
       if(types[1] %in% c("ClickedToUnlock","ClickedToLock"))
         return('button')
-
+      
       if(types[1] == 'BallClickedInBlockedMode')
         return('ball')
       if(types[1] == 'BoardClickedInBlockedMode')
         return('field')
-
+      
       if(length(types)>=2){
-
+        
         ind <- which(types=="BoardPositionClicked")
         if(length(ind)==0) {
           stop('Strange move sequence')
         } 
         
         ind <- ind[1]+1
-
+        
         if(types[ind] %in% c("ballSelect", "ballDeselect"))
           return('ball')
-
+        
         if(types[ind] %in% c('ballMove', 'blockedMove'))
           return('field')
       }
-
+      
       if(types[1] == 'BoardPositionClicked')
         return('field')
     }
@@ -254,7 +254,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   }, events$time, events$fixation_coords_x, events$fixation_coords_y)
   
   
-   
+  
   events$ball_color <- mapply(
     function(index, state){
       X <- t(file_data$game_recover$states[[state]])[index+1]
@@ -270,7 +270,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     events$field_position,
     events$game_state
   )
-
+  
   unknownField <- events$field_type==''
   events$field_type[unknownField] <- c('ball', 'field')[is.na(events$ball_color[unknownField])+1]
   events <- events[-events$time<0,]
@@ -298,11 +298,27 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     eye_epochs <- list()
   }
   
+  events$changed_selection <- FALSE
+  
   if(file_data$record_type == 'test' || file_data$record_type == 'random') {
     #count how many times user changed his decision about ball selection
-    game_events <- eyetracking_messages[grep('gm', eyetracking_messages)]
-    game_events <- game_events[-grep('BoardPositionClicked', game_events)]
-    changed_selection <- sum(diff(grep('ballSelect', game_events)) == 1)
+    changed_selection <- (events$field_type[events$activation == TRUE] == 'ball')
+    filtered_idx <- which(c(diff(changed_selection)==0, F) & changed_selection)
+    idx <- (1:nrow(events))[events$activation == TRUE] [ filtered_idx ]
+    
+    rl_idx <- c()
+    
+    if(length(idx) > 1) {
+      for(i in 1:(length(idx)-1)) {
+        if(diff(events$time[idx])[i] > 100) {
+          rl_idx <- c(rl_idx, idx[i])
+        }
+      }
+    }
+    
+    events$changed_selection[rl_idx] = TRUE
+    
+    changed_selection <- length(rl_idx)
   } else {
     changed_selection <- NULL
   }

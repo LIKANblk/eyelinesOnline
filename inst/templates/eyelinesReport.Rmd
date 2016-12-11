@@ -86,8 +86,8 @@ TP_ball <- length(which(events$quick_fixation == T & events$activation == T & ev
 TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
 TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
 TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
-FP_ball <- length(which(events$false_alarm == T & events$field_type == 'ball'))
-FP_cell <- length(which(events$false_alarm == T & events$field_type == 'field'))
+FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T)& events$field_type == 'ball'))
+FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & events$field_type == 'field'))
 FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
 FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
 
@@ -122,8 +122,8 @@ TP_ball <- length(which(events$quick_fixation == T & events$activation == T & ev
 TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
 TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
 TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
-FP_ball <- length(which(events$false_alarm == T & events$field_type == 'ball'))
-FP_cell <- length(which(events$false_alarm == T & events$field_type == 'field'))
+FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T)& events$field_type == 'ball'))
+FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & events$field_type == 'field'))
 FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
 FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
 
@@ -161,24 +161,14 @@ DH <- dwell_histogram(experiment)
 DH
 ```
 
-## ks.test
-```{r}
-test_ks_value(experiment)
-```
-
 ## User changed selection and FAs
 ```{r, echo=FALSE}
 for (i in 1:length(experiment)){
   if(experiment[[i]]$file_data$record_type == 'test' || experiment[[i]]$file_data$record_type == 'random'){
-    if(!is.null(experiment[[i]]$file_data$changed_selection)) {
-      changed_selection <- experiment[[i]]$file_data$changed_selection
-    } else {
-      changed_selection <- 0
-    }
-    cat(
+   cat(
       str_filter(experiment[[i]]$file_data$filename_r2e, '[[:digit:]]+.r2e')[[1]][1],
       '(', experiment[[i]]$file_data$record_type,
-      ') - ', changed_selection, ' changed selection and '
+      ') - ', sum(experiment[[i]]$events$changed_selection == TRUE), ' changed selection and '
       , sum(experiment[[i]]$events$false_alarm), ' FA reported \n', sep = "")
   }
 }
