@@ -82,14 +82,20 @@ for ( i in 1:length(experiment)) {
     events <- rbind(events, experiment[[i]]$events)
   }
 }
-TP_ball <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'ball'))
-TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
-TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
-TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T 
+                        & events$field_type == 'field'  & events$changed_selection == F))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F 
+                        & events$field_type == 'field'  & events$changed_selection == F))
 FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T)& events$field_type == 'ball'))
 FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & events$field_type == 'field'))
-FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
-FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T 
+                        & events$field_type == 'field' & events$changed_selection == F))
 
 
 df_for_table <- data.frame(type = c('ball', 'cell'),
@@ -118,14 +124,20 @@ for ( i in 1:length(experiment)) {
   }
 }
 if(length(events)){
-TP_ball <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'ball'))
-TP_cell <- length(which(events$quick_fixation == T & events$activation == T & events$field_type == 'field'))
-TN_ball <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'ball'))
-TN_cell <- length(which(events$quick_fixation == T & events$activation == F & events$field_type == 'field'))
-FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T) & events$field_type == 'ball'))
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T 
+                        & events$field_type == 'field'  & events$changed_selection == F))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F 
+                        & events$field_type == 'field'  & events$changed_selection == F))
+FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T)& events$field_type == 'ball'))
 FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & events$field_type == 'field'))
-FN_ball <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'ball'))
-FN_cell <- length(which(events$quick_fixation == F & events$activation == T & events$field_type == 'field'))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T 
+                        & events$field_type == 'ball' & events$changed_selection == F))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T 
+                        & events$field_type == 'field' & events$changed_selection == F))
 
 
 df_for_table <- data.frame(type = c('ball', 'cell'),

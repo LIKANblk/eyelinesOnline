@@ -37,6 +37,7 @@ dwell_histogram <- function(experiment, file_name = NULL) {
     else if (events$quick_fixation[i] == TRUE && events$activation[i] == FALSE) events$classifier_response[i] <- "true_negative"
   }
   events$classifier_response[which(events$false_alarm)] <- 'false_positive'
+  events$classifier_response[which(events$changed_selection == TRUE)] <- 'false_positive'
   events$classifier_response <- factor(events$classifier_response,
                                        levels=c('false_negative','true_positive','true_negative','false_positive'))
   
