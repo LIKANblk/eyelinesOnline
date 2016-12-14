@@ -20,6 +20,7 @@ moves_table <- function(experiment) {
   
   for (i in 1:length(experiment)) {
     events <- experiment[[i]]$events
+    events <- events[events$field_type == 'ball', ]
     if(experiment[[i]]$file_data$record_type == 'train') {
       
       n_train <- n_train + 1
