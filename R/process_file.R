@@ -316,7 +316,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       }
     }
     
-    events$changed_selection[rl_idx] = TRUE
+    events$changed_selection[rl_idx] <- TRUE
+    events$changed_selection[which(events$changed_selection == T & events$false_alarm == T)] <- FALSE
+    # events$changed_selection[which(events$changed_selection == T & events$quick_fixation == F)] <- FALSE
+    # events$false_alarm[which(events$false_alarm == T & events$quick_fixation == F)] <- FALSE
     
     changed_selection <- length(rl_idx)
   } else {

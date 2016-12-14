@@ -180,7 +180,7 @@ for (i in 1:length(experiment)){
     cat(
       str_filter(experiment[[i]]$file_data$filename_r2e, '[[:digit:]]+.r2e')[[1]][1],
       '(', experiment[[i]]$file_data$record_type,
-      ') - ', sum(experiment[[i]]$events$changed_selection == TRUE), ' changed selection and '
+      ') - ', sum(experiment[[i]]$events$changed_selection == TRUE), ' changed selection (without report FA) and '
       , sum(experiment[[i]]$events$false_alarm), ' FA reported \n', sep = "")
   }
 }
