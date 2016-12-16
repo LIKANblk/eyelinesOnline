@@ -1,4 +1,4 @@
-extract_clf_results <- function(path, ball_only = F){
+extract_clf_results <- function(path, ball_only = T){
   load(path)
   
   test_table <- data.frame()
@@ -26,13 +26,13 @@ extract_clf_results <- function(path, ball_only = F){
   
   normal_TP <- sum(test_table$activation == T & test_table$quick_fixation == T)
   normal_TN <- sum(test_table$activation == F & test_table$quick_fixation == T)
-  normal_FP <- sum(test_table$false_alarm == T)
+  normal_FP <- sum(test_table$false_alarm == T & test_table$changed_selection == T & test_table$quick_fixation == T)
   normal_FN <- sum(test_table$activation == T & test_table$dwell_time == 1000)
   
   
   random_TP <- sum(random_table$activation == T & random_table$quick_fixation == T)
   random_TN <- sum(random_table$activation == F & random_table$quick_fixation == T)
-  random_FP <- sum(random_table$false_alarm == T)
+  random_FP <- sum(random_table$false_alarm == T & test_table$changed_selection == T & test_table$quick_fixation == T)
   random_FN <- sum(random_table$activation == T & random_table$dwell_time == 1000)
   
   df_for_table <- data.frame(normal_TP = normal_TP, normal_TN = normal_TN,

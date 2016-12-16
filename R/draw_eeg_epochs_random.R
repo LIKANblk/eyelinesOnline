@@ -67,12 +67,14 @@ draw_eeg_epochs_random <- function(experiment, clf_response=c('true_positive', '
                                    summary_table_normal$activation == act &
                                    summary_table_normal$dwell_time == 500 &
                                    summary_table_normal$changed_selection == FALSE &
+                                   summary_table_normal$false_alarm == FALSE &
                                    summary_table_normal$field_type == 'ball'),
                              " ball epochs and " , 
                              sum(summary_table_normal$quick_fixation == qf &
                                    summary_table_normal$activation == act & 
                                    summary_table_normal$dwell_time == 500 &
                                    summary_table_normal$changed_selection == FALSE &
+                                   summary_table_normal$false_alarm == FALSE &
                                    summary_table_normal$field_type == 'field'),
                              " cell epochs")
   
@@ -81,12 +83,14 @@ draw_eeg_epochs_random <- function(experiment, clf_response=c('true_positive', '
                                    summary_table_random$activation == act &
                                    summary_table_random$dwell_time == 500 &
                                    summary_table_random$changed_selection == FALSE &
+                                   summary_table_random$false_alarm == FALSE &
                                    summary_table_random$field_type == 'ball'),
                              " ball epochs and " , 
                              sum(summary_table_random$quick_fixation == qf &
                                    summary_table_random$activation == act & 
                                    summary_table_random$dwell_time == 500 &
                                    summary_table_random$changed_selection == FALSE &
+                                   summary_table_random$false_alarm == FALSE &
                                    summary_table_random$field_type == 'field'),
                              " cell epochs")
   

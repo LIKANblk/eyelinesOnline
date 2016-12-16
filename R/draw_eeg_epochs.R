@@ -55,11 +55,15 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
                                 sum(summary_table$quick_fixation == qf & 
                                       summary_table$activation == act &
                                       summary_table$dwell_time < 600 &
+                                      summary_table$changed_selection == FALSE &
+                                      summary_table$false_alarm == FALSE &
                                       summary_table$field_type == 'ball'),
                                 " ball epochs and " , 
                                 sum(summary_table$quick_fixation == qf &
                                       summary_table$activation == act & 
                                       summary_table$dwell_time < 600 &
+                                      summary_table$changed_selection == FALSE &
+                                      summary_table$false_alarm == FALSE &
                                       summary_table$field_type == 'field'),
                                 " cell epochs")
   if(clf_response != 'false_negative'){ 
@@ -68,12 +72,14 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
                                         summary_table$activation == act &
                                         summary_table$dwell_time >= 600 &
                                         summary_table$changed_selection == FALSE &
+                                        summary_table$false_alarm == FALSE &
                                         summary_table$field_type == 'ball'),
                                   " ball epochs and " , 
                                   sum(summary_table$quick_fixation == qf &
                                         summary_table$activation == act & 
                                         summary_table$dwell_time >= 600 &
                                         summary_table$changed_selection == FALSE &
+                                        summary_table$false_alarm == FALSE &
                                         summary_table$field_type == 'field'),
                                   " cell epochs")
   } else {
@@ -82,12 +88,14 @@ draw_eeg_epochs <- function(experiment, clf_response=c('true_positive', 'true_ne
                                         summary_table$activation == act &
                                         summary_table$dwell_time >= 600 &
                                         summary_table$changed_selection == FALSE &
+                                        summary_table$false_alarm == FALSE &
                                         summary_table$field_type == 'ball'),
                                   " ball epochs and " , 
                                   sum(summary_table$quick_fixation == qf &
                                         summary_table$activation == act & 
                                         summary_table$dwell_time >= 600 &
                                         summary_table$changed_selection == FALSE &
+                                        summary_table$false_alarm == FALSE &
                                         summary_table$field_type == 'field'),
                                   " cell epochs")
   }

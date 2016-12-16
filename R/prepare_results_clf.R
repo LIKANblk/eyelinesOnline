@@ -1,44 +1,17 @@
-prepare_results_clf <- function(path, ball = T) {
-  load(path)
+prepare_results_clf <- function(normal_table, random_table, n_normal, n_random) {
   
-  test_table <- data.frame()
-  random_table <- data.frame()
-  
-  for ( i in 1:length(experiment)) {
-    if(experiment[[i]]$file_data$record_type == 'test') {
-      test_table <- rbind(test_table, experiment[[i]]$events)
-    }
-  }
-  
-  for ( i in 1:length(experiment)) {
-    if(experiment[[i]]$file_data$record_type == 'random') {
-      random_table <- rbind(random_table, experiment[[i]]$events)
-    }
-  }
-  
-  if(ball) {
-    test_table <- test_table[test_table$field_type == 'ball', ]
-    random_table <- random_table[random_table$field_type == 'ball', ]
-  } else {
-    test_table <- test_table[test_table$field_type == 'field', ]
-    random_table <- random_table[random_table$field_type == 'field', ]
-  }
-  
-  normal_TP <- sum(test_table$activation == T & test_table$quick_fixation == T & test_table$changed_selection == FALSE)
-  normal_TN <- sum(test_table$activation == F & test_table$quick_fixation == T & test_table$changed_selection == FALSE)
-  normal_FP <- sum(test_table$false_alarm == T | test_table$changed_selection == TRUE)
-  normal_FN <- sum(test_table$activation == T & test_table$dwell_time == 1000 & test_table$changed_selection == FALSE)
+  normal_TP <- sum(normal_table$activation == T & normal_table$quick_fixation == T & normal_table$changed_selection == F & normal_table$false_alarm == F)
+  normal_TN <- sum(normal_table$activation == F & normal_table$quick_fixation == T & normal_table$changed_selection == F & normal_table$false_alarm == F)
+  normal_FP <- sum((normal_table$false_alarm == T | normal_table$changed_selection == T) & normal_table$quick_fixation == T) 
+  normal_FN <- sum(normal_table$activation == T & normal_table$dwell_time == 1000 & normal_table$changed_selection == F & normal_table$false_alarm == F)
   
   
-  random_TP <- sum(random_table$activation == T & random_table$quick_fixation == T & random_table$changed_selection == FALSE)
-  random_TN <- sum(random_table$activation == F & random_table$quick_fixation == T & random_table$changed_selection == FALSE)
-  random_FP <- sum(random_table$false_alarm == T | random_table$changed_selection == TRUE)
-  random_FN <- sum(random_table$activation == T & random_table$dwell_time == 1000 & random_table$changed_selection == FALSE)
+  random_TP <- sum(random_table$activation == T & random_table$quick_fixation == T & random_table$changed_selection == F & random_table$false_alarm == F) 
+  random_TN <- sum(random_table$activation == F & random_table$quick_fixation == T & random_table$changed_selection == F & random_table$false_alarm == F)
+  random_FP <- sum((random_table$false_alarm == T | random_table$changed_selection == T) & random_table$quick_fixation == T)
+  random_FN <- sum(random_table$activation == T & random_table$dwell_time == 1000 & random_table$changed_selection == F & random_table$false_alarm == F)
   
-  df_fo_plot_test <- data.frame(type = c('TP', 'TN', 'FP', 'FN'),
-                                clf_count = c(normal_TP, normal_TN, normal_FP, normal_FN))
-  df_fo_plot_random <- data.frame(type = c('TP', 'TN', 'FP', 'FN'), 
-                                  clf_count = c(random_TP, random_TN, random_FP, random_FN))
-  l <- list(normal = df_fo_plot_test, random = df_fo_plot_random)
-  l
+  df <- data.frame(normal_TP = normal_TP / n_normal, normal_TN = normal_TN / n_normal, normal_FP = normal_FP / n_normal, normal_FN = normal_FN / n_normal,
+                   random_TP = random_TP / n_random, random_TN = random_TN / n_random, random_FP = random_FP / n_random, random_FN = random_FN / n_random)
+  df
 }
