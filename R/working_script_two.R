@@ -10,12 +10,12 @@ foo <- function() {
   for (i in 23:27) {
     load(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
     l <- bar(experiment)
-    report_summary <- rbind(report_summary, get_report_summary(l$normal_table, l$random_table))
+    report_summary <- rbind(report_summary, get_report_summary(l$normal_table, l$random_table, FALSE))
     
     remove(experiment)
   }
   
-  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/report_summary.csv", row.names = F)
+  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/report_summary_no_change.csv", row.names = F)
   
   
   ################ TABLE 2 ################ 
@@ -52,6 +52,9 @@ bar <- function(experiment) {
   
   n_test <- 0
   n_random <- 0
+  
+  n_train <- 0
+  N_fixes <- 0
 
   for ( i in 1:length(experiment)) {
     if(experiment[[i]]$file_data$record_type == 'test') {
@@ -60,11 +63,15 @@ bar <- function(experiment) {
     } else if (experiment[[i]]$file_data$record_type == 'random'){
       random_table <- rbind(random_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball', ])
       n_random <- n_random + 1
+    } else if (experiment[[i]]$file_data$record_type == 'train') {
+      N_fixes <- N_fixes + nrow(experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball',])
+      n_train <- n_train + 1
     }
   }
   
   l <- list(normal_table = normal_table, 
             random_table = random_table, 
             n_test = n_test, 
-            n_random = n_random)
+            n_random = n_random,
+            N_fixes = N_fixes / n_train)
 }

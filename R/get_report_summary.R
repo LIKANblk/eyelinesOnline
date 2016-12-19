@@ -1,8 +1,14 @@
-get_report_summary <- function(normal_table, random_table) {
+get_report_summary <- function(normal_table, random_table, count_changed_selection = T) {
+  
   
   TP_ball_normal <- sum(normal_table$quick_fixation == T & normal_table$activation == T & normal_table$changed_selection == F & normal_table$false_alarm == F)
   TN_ball_normal <-sum(normal_table$quick_fixation == T & normal_table$activation == F  & normal_table$changed_selection == F  & normal_table$false_alarm == F)
-  FP_ball_normal <-sum((normal_table$false_alarm == T | normal_table$changed_selection ) == T & normal_table$quick_fixation == T)
+  if(count_changed_selection) {
+    FP_ball_normal <-sum((normal_table$false_alarm == T | normal_table$changed_selection == T ) & normal_table$quick_fixation == T)
+  } else {
+    FP_ball_normal <-sum(normal_table$false_alarm == T  & normal_table$quick_fixation == T)
+  }
+  
   FN_ball_normal <- sum(normal_table$quick_fixation == F & normal_table$activation == T & normal_table$changed_selection == F  & normal_table$false_alarm == F)
   
   SENS_normal <- TP_ball_normal / (TP_ball_normal + FN_ball_normal)
@@ -13,7 +19,11 @@ get_report_summary <- function(normal_table, random_table) {
   
   TP_ball_random <- sum(random_table$quick_fixation == T & random_table$activation == T & random_table$changed_selection == F  & random_table$false_alarm == F)
   TN_ball_random <- sum(random_table$quick_fixation == T & random_table$activation == F & random_table$changed_selection == F & random_table$false_alarm == F)
-  FP_ball_random <- sum((random_table$false_alarm == T | random_table$changed_selection == T ) & random_table$quick_fixation == T)
+  if(count_changed_selection) {
+    FP_ball_random <- sum((random_table$false_alarm == T | random_table$changed_selection == T ) & random_table$quick_fixation == T)
+  } else {
+    FP_ball_random <- sum(random_table$false_alarm == T  & random_table$quick_fixation == T)
+  }
   FN_ball_random <- sum(random_table$quick_fixation == F & random_table$activation == T & random_table$changed_selection == F & random_table$false_alarm == F)
   
   SENS_random <- TP_ball_random / (TP_ball_random + FN_ball_random)
