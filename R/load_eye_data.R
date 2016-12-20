@@ -1,5 +1,5 @@
 load_eye_data <- function(path, epoch_size, left_border,
-                         sRate, channels, A1,A2, low, high)
+                         sRate, channels, A1,A2, low, high, no_button_press = F)
 {
   
   #setwd(path)
@@ -21,7 +21,7 @@ load_eye_data <- function(path, epoch_size, left_border,
     signal <- signal[(sync_marks[3]+1):dim(signal)[1],]
   
     
-    l <- prepare.data(signal, actions, epoch_size, sRate, left_border)
+    l <- prepare.data(signal, actions, epoch_size, sRate, left_border, no_button_press = F)
     
     eegT <- abind(eegT, l$eegT)
     eegNT <- abind(eegNT, l$eegNT)

@@ -1,4 +1,4 @@
-prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
+prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press = F)
 {
   msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*sRate)
   msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*sRate)
@@ -8,11 +8,13 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border)
   msgBoardClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBoardClickedInBlockedMode"),1]*sRate)
   
   epoch_size <- round(((epoch_size - left_border)/1000) * sRate)
+  if(no_button_press) {
+    eventsT_t = c(msgballChosen_t, msgBallMoved_t)
+  } else {
+    eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
+  }
   
-  eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
-  #eventsT_t = msgbuttonPressed_t
-  #eventsNT_t = c(msgClickedInBlockMode_t, msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
-  eventsNT_t = msgBallClickedInBlockedMode_t
+  eventsNT_t = c(msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
   
   eventsNT_t <- eventsNT_t[eventsNT_t<=nrow(signal)]
   eventsT_t <- eventsT_t[eventsT_t<=nrow(signal)]

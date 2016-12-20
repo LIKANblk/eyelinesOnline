@@ -9,7 +9,7 @@
 buildClassifier <- function(path, epoch_size=1000, 
                             left_border=-500, channels = c(1:5,7,9:21), A1=22, A2=23, 
                             low=F, high=30, bsln_start = 200, bsln_end = 300,
-                            sRate = 500, times_seq = seq(300,450, 20), decimation_window = 50)
+                            sRate = 500, times_seq = seq(300,450, 20), decimation_window = 50, no_button_press = F)
   {
   #channels from Trofimov's clf = c('PZ','P3','P4','P1','P2','PO7','PO8','PO3','PO4','Oz','O1','O2','POz')
   
@@ -18,8 +18,8 @@ buildClassifier <- function(path, epoch_size=1000,
   # !!!TMP!!!
   
 
-  l <- load_eye_data(normalizePath(path), epoch_size, left_border, sRate,
-                    channels, A1,A2, low, high)
+  l <- load_eye_data(paste0(normalizePath(path), '/'), epoch_size, left_border, sRate,
+                    channels, A1,A2, low, high, no_button_press = F)
   
   ret <- process_params(l, channels, A1,A2, low, high, bsln_start, bsln_end, left_border, times_seq, decimation_window)
   
