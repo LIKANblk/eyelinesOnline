@@ -1,4 +1,4 @@
-prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press = F)
+prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press, random_non_target, ball_only, more_non_target)
 {
   msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*sRate)
   msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*sRate)
@@ -9,17 +9,41 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
   
   epoch_size <- round(((epoch_size - left_border)/1000) * sRate)
   if(no_button_press) {
-    eventsT_t = c(msgballChosen_t, msgBallMoved_t)
+    if(ball_only){
+      eventsT_t <- c(msgballChosen_t)
+    } else {
+      eventsT_t <- c(msgballChosen_t, msgBallMoved_t)
+    }
   } else {
-    eventsT_t = c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
+    eventsT_t <- c(msgbuttonPressed_t, msgballChosen_t, msgBallMoved_t)
   }
   
-  eventsNT_t = c(msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
+  
+  if(ball_only){
+    eventsNT_t <- c(msgBallClickedInBlockedMode_t)
+  } else {
+    eventsNT_t <- c(msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
+  }
+  
+  test_NT <- eventsNT_t
+  
+  if(random_non_target){
+    eventsNT_t <- sort(
+      c(eventsNT_t, ceiling(
+        seq(
+          from = ceiling(actions$Latency[1]*sRate) - left_border,
+          to = nrow(signal) - epoch_size,
+          length.out = (length(eventsT_t)-length(eventsNT_t)) * more_non_target
+        )
+      ))
+    )
+  }
   
   eventsNT_t <- eventsNT_t[eventsNT_t<=nrow(signal)]
   eventsT_t <- eventsT_t[eventsT_t<=nrow(signal)]
+  test_NT <- test_NT[test_NT<=nrow(signal)]
   
-#   cat("Train epochs: target=", length(eventsT_t), " nontarget=", length(eventsNT_t), "\n")
+  #   cat("Train epochs: target=", length(eventsT_t), " nontarget=", length(eventsNT_t), "\n")
   
   nChannels <- dim(signal)[2]
   left_border = left_border/1000*sRate
@@ -32,12 +56,19 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
   }
   
   eegNT = array(dim = c(epoch_size, nChannels-1, length(eventsNT_t)))
+  
   for (i in 1:length(eventsNT_t))
   {
     eegNT[ , , i] <- signal[(eventsNT_t[i]+left_border+1):(eventsNT_t[i]+epoch_size+left_border), -ncol(signal)]
   }
   
-  l <- list(eegT = eegT, eegNT = eegNT)
+  eegNT_test = array(dim = c(epoch_size, nChannels-1, length(test_NT)))
+  for (i in 1:length(test_NT))
+  {
+    eegNT_test[ , , i] <- signal[(test_NT[i]+left_border+1):(test_NT[i]+epoch_size+left_border), -ncol(signal)]
+  }
+  
+  l <- list(eegT = eegT, eegNT = eegNT, eegNT_test = eegNT_test)
   
   return(l)
   

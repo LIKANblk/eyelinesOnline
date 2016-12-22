@@ -2,7 +2,7 @@ process_params <- function(l, channels, A1_ch, A2_ch, low, high, bsln_start,
                          bsln_end, left_border, times_seq, decimation_window)
 {  
   
-  params <- train_classifier(l$eegT, l$eegNT, l$sRate,
+  params <- train_classifier(l$eegT, l$eegNT, l$eegNT_test, l$sRate,
                       l$path, l$epoch_size, A1_ch, A2_ch, bsln_start,
                       bsln_end, left_border, high, channels, times_seq, decimation_window)
   

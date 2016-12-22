@@ -1,5 +1,5 @@
 
-eye_train1 <- function(X0, X1, nfold)
+eye_train1 <- function(X0, X1, X_test, nfold)
 {
   #####################  preallocate  #########################
   W <- matrix(ncol = nfold, nrow = dim(X1)[2] )
@@ -37,21 +37,13 @@ eye_train1 <- function(X0, X1, nfold)
   CV <- createFolds(Y, nfold)
   
   #generate random samples for training and testing
-  for (i in 1:nfold) {
-    trIdxES[[i]] <- sample( c( rep(0, length(CV[[i]])),
-                               rep(1,  length(Y) - length(CV[[i]]) )
-    ))
-    tstIdxES[[i]] <- as.numeric(!trIdxES[[i]])
-  }
   
   for (i in 1:length(CV)) 
   {
-    trIdx <- trIdxES[[i]]
-    tstIdx <- tstIdxES[[i]]
-    Xtr <- X[which(trIdx==1), ]
-    Xtst <- X[which(tstIdx==1), ]
-    Ytr <- Y[which(trIdx==1)]
-    Ytst <- Y[which(tstIdx==1)]
+    Xtr <- X[-CV[[i]], ]
+    Xtst <- X[CV[[i]], ]
+    Ytr <- Y[-CV[[i]]]
+    Ytst <- Y[CV[[i]]]
     N0tr <- sum(Ytr == 1)
     N1tr <- sum(Ytr == 2)
     N0tst <- sum(Ytst == 1)
@@ -68,12 +60,10 @@ eye_train1 <- function(X0, X1, nfold)
     ths <- Q + .Machine$double.eps
     ths <- sort(ths)
     
-    sens_all <- vector()
     spec_all <- vector()
     
     for (k in 1:length(ths))
     {
-      sens_all[k] <- length(which(Q1 <= ths[k])) / N1
       spec_all[k] <- length(which(Q0 > ths[k])) / N0
     }
     idx <- which(spec_all >= 0.95)
@@ -82,7 +72,10 @@ eye_train1 <- function(X0, X1, nfold)
     th_opt[i] <- ths[idx]
     
     #optimal operating point of the ROC curve
-    auc0[i] <- calc_roc_auc(N1,N0,Q1,Q0)
+    total_Q <- rbind(X_test, X1) %*% W[,i]
+    auc0[i] <- calc_roc_auc(nrow(X1), nrow(X_test), total_Q[-(1:nrow(X_test))], total_Q[1:nrow(X_test)])
+    
+    #auc0_old[i] <- calc_roc_auc(N1,N0,Q1,Q0)
     
     #calc acc on train sample
     Q <- Xtr %*% W[,i]
@@ -90,7 +83,9 @@ eye_train1 <- function(X0, X1, nfold)
     Q1 <- Q[Ytr == 2]
     
     tr_vals <- calc_acc(Q1, N1tr, Q0, N0tr, th_opt[i]) 
-    acc_tr[i] <- tr_vals$acc; sens_tr[i] <- tr_vals$sens; spec_tr[i] <- tr_vals$spec;
+    acc_tr[i] <- tr_vals$acc
+    sens_tr[i] <- tr_vals$sens
+    spec_tr[i] <- tr_vals$spec
     auc_tr[i] <- calc_roc_auc(N1tr,N0tr,Q1,Q0)
     
     #test
@@ -99,7 +94,9 @@ eye_train1 <- function(X0, X1, nfold)
     Q1 <- Q[Ytst == 2]
     
     tst_vals <- calc_acc(Q1, N1tst, Q0, N0tst, th_opt[i])
-    acc_tst[i] <- tst_vals$acc; sens_tst[i] <- tst_vals$sens; spec_tst[i] <- tst_vals$spec;
+    acc_tst[i] <- tst_vals$acc
+    sens_tst[i] <- tst_vals$sens
+    spec_tst[i] <- tst_vals$spec
     auc_tst[i] <- calc_roc_auc(N1tst,N0tst,Q1,Q0)
     
   }

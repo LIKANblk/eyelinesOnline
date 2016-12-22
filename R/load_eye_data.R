@@ -1,13 +1,14 @@
 load_eye_data <- function(path, epoch_size, left_border,
-                         sRate, channels, A1,A2, low, high, no_button_press = F)
+                         sRate, channels, A1,A2, low, high, no_button_press, random_non_target, ball_only, more_non_target)
 {
   
   #setwd(path)
   
   json <- fromJSON(file = file.path(path,"meta.json"))
   
-  eegT = c()
-  eegNT = c()
+  eegT <- c()
+  eegNT <- c()
+  eegNT_test <- c()
   
 #   sink(sprintf("%soutput_%sHz.txt",path, high, high))
   
@@ -21,16 +22,18 @@ load_eye_data <- function(path, epoch_size, left_border,
     signal <- signal[(sync_marks[3]+1):dim(signal)[1],]
   
     
-    l <- prepare.data(signal, actions, epoch_size, sRate, left_border, no_button_press = F)
+    l <- prepare.data(signal, actions, epoch_size, sRate, left_border, no_button_press, random_non_target, ball_only, more_non_target)
     
     eegT <- abind(eegT, l$eegT)
     eegNT <- abind(eegNT, l$eegNT)
+    eegNT_test <- abind(eegNT_test, l$eegNT_test)
     }
   }
   
   
   l <- list(eegT = eegT,
             eegNT = eegNT,
+            eegNT_test = eegNT_test,
             sRate = sRate,
             path = path,
             epoch_size = epoch_size)  
