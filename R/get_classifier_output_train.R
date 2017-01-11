@@ -56,11 +56,10 @@ process = function(){
       ret <- eeg[times,]
       attr(ret, 'TS') <- attr(eeg, 'TS')[times]
       ret
-    }, epochs, dwell_time[1:length(epochs)])
+    }, epochs, dwell_time[1:length(epochs)], SIMPLIFY = FALSE)
   }
   
   result <- run.offline(data$streams, data$blocks, classifier)
-  
   raw_epochs <- cutExcess(result$raw_epochs, dwell_time)
   filtered_epochs <- cutExcess(result$filtered_epochs, dwell_time)
   

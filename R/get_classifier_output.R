@@ -68,7 +68,7 @@ get_classifier_output <- function(filename_r2e, filename_classifier, start_epoch
       ret <- eeg[times,]
       attr(ret, 'TS') <- attr(eeg, 'TS')[times]
       ret
-    }, epochs, dwell_time[1:length(epochs)])
+    }, epochs, dwell_time[1:length(epochs)], SIMPLIFY = FALSE)
   }
 
   result <- run.offline(data$streams, data$blocks, classifier)
