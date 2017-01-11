@@ -70,24 +70,23 @@ get_classifier_output <- function(filename_r2e, filename_classifier, start_epoch
       ret
     }, epochs, dwell_time[1:length(epochs)])
   }
-  
 
-    result <- run.offline(data$streams, data$blocks, classifier)
-    
-    result.DF <- do.call(rbind,result$RES)
-    
-    raw_epochs <- cutExcess(result$raw_epochs, dwell_time)
-    filtered_epochs <- cutExcess(result$filtered_epochs, dwell_time)
-    
-    classifierIn <- do.call(rbind, result$classifierIn)
-    classifierOut <- do.call(rbind, result$classifierOut)
-    list(
-      classifier_output = result.DF, 
-      raw_epochs = raw_epochs, 
-      filtered_epochs = filtered_epochs, 
-      sampling_rate = stream$samplingRate,
-      classifierIn = classifierIn,
-      classifierOut = classifierOut
-    )
+  result <- run.offline(data$streams, data$blocks, classifier)
+  
+  result.DF <- do.call(rbind,result$RES)
+  
+  raw_epochs <- cutExcess(result$raw_epochs, dwell_time)
+  filtered_epochs <- cutExcess(result$filtered_epochs, dwell_time)
+  
+  classifierIn <- do.call(rbind, result$classifierIn)
+  classifierOut <- do.call(rbind, result$classifierOut)
+  list(
+    classifier_output = result.DF, 
+    raw_epochs = raw_epochs, 
+    filtered_epochs = filtered_epochs, 
+    sampling_rate = stream$samplingRate,
+    classifierIn = classifierIn,
+    classifierOut = classifierOut
+  )
   
 }

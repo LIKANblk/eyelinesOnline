@@ -1,4 +1,5 @@
-process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch, end_epoch, no_eeg,   gap_between_short_fixations = 100) {
+process_file <- function(filename_edf, filename_r2e, file_data, filename_classifier, start_epoch,
+                         end_epoch, no_eeg, gap_between_short_fixations = 100, res) {
   file_data$filename_edf <- filename_edf
   file_data$filename_r2e <- filename_r2e
   file_data$filename_classifier <- filename_classifier
@@ -284,9 +285,16 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     cond <- 'test'
   }
   
-  if(!no_eeg && filename_classifier!='' && (file_data$record_type=='test' || file_data$record_type == cond)){
-    eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
-    events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
+  eye_epochs <- list()
+  
+  if(!no_eeg && filename_classifier!=''){
+    if((file_data$record_type=='test' || file_data$record_type == cond)){
+      eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
+      events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
+    } else if(file_data$record_type=='train') {
+      eeg_data <- get_classifier_output_train(filename_r2e, start_epoch, end_epoch, events$time, events$dwell_time, res)
+    }
+    
     eye_epochs <- mapply(function(current_time, current_dwell) {
       ind <- which(eyetracking_data$samples$time==current_time)
       (length(ind)==1) || browser("Can't extract eye epoch")
@@ -294,8 +302,6 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       eyetracking_data$samples[ max(1,(ind-(current_dwell-start_epoch)/1000*file_data$eye_sampling_rate)) : (ind + end_epoch/1000*file_data$eye_sampling_rate-1) , c('x','y')]
     }
     , events$time, events$dwell_time, SIMPLIFY = FALSE)
-  } else {
-    eye_epochs <- list()
   }
   
   events$changed_selection <- FALSE
