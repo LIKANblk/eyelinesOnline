@@ -18,14 +18,15 @@ refs <- c(res$A1, res$A2)
 
 process = function(){
   times <- input(3)
-  raw_epoch <- cross.windowizeByEvents(input(1), times, %1$i/1000*SI(FS)$samplingRate, %2$i/1000*SI(FS)$samplingRate)
+  IN <- input(1)
+  raw_epoch <- cross.windowizeByEvents(IN, times, %1$i/1000*SI(IN)$samplingRate, %2$i/1000*SI(IN)$samplingRate)
   createOutput(raw_epoch, "raw_epochs")
-  FS2 <- signalPreparation(input(1), low=res$low, high=res$high, notch=50, refs=refs, channels=c(res$channels, 29, 30, 31, 32))
+  FS2 <- signalPreparation(IN, low=res$low, high=res$high, notch=50, refs=refs, channels=c(res$channels, 29, 30, 31, 32))
   M <- diag(nrow=SI(FS2)$channels-2, ncol=SI(FS2)$channels)
   M[SI(FS2)$channels-3, SI(FS2)$channels-2 ] = -1
   M[SI(FS2)$channels-2, SI(FS2)$channels -0:2   ] = c(-1,1,0)
   FS2 <- pipe.spatial(FS2, M)
-  filtered_epochs <- cross.windowizeByEvents(FS2, times, %1$i/1000*SI(FS)$samplingRate, %2$i/1000*SI(FS)$samplingRate) 
+  filtered_epochs <- cross.windowizeByEvents(FS2, times, %1$i/1000*SI(IN)$samplingRate, %2$i/1000*SI(IN)$samplingRate) 
   createOutput(filtered_epochs, "filtered_epochs")
 }
  ', max(dwell_time)+end_epoch-start_epoch, start_epoch-max(dwell_time), res_str)
