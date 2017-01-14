@@ -101,10 +101,15 @@ train_shrinkage <- function(X,Y)
   
   #compute inverse of joint covariance matrix (i.e. LDA instead of QDA)
   S <- 0
+  # for (c in 1:length(obj$Sigma))
+  # {
+  #   S <- S + obj$Sigma[[c]]
+  # }
   for (c in 1:length(obj$Sigma))
   {
-    S <- S + obj$Sigma[[c]]
+    S <- S + (1 - sum(Y==c)/lenght(Y))*obj$Sigma[[c]]
   }
+  
   
   obj$Sinv <- inv(S/length(obj$Sigma))
   obj$W <- drop(obj$Sinv%*%(obj$mu[[1]]-obj$mu[[2]]))
