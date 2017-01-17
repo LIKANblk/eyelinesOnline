@@ -107,7 +107,7 @@ train_shrinkage <- function(X,Y)
   # }
   for (c in 1:length(obj$Sigma))
   {
-    S <- S + (1 - sum(Y==c)/lenght(Y))*obj$Sigma[[c]]
+    S <- S + (1 - sum(Y==c)/length(Y))*obj$Sigma[[c]]
   }
   
   

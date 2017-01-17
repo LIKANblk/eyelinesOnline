@@ -1,5 +1,5 @@
 
-eye_train1 <- function(X0, X1, X_test, nfold)
+eye_train1 <- function(X0, X1, X_real_nontarget, nfold)
 {
   #####################  preallocate  #########################
   W <- matrix(ncol = nfold, nrow = dim(X1)[2] )
@@ -40,8 +40,8 @@ eye_train1 <- function(X0, X1, X_test, nfold)
   
   for (i in 1:length(CV)) 
   {
-    Xtr <- X[-CV[[i]], ]
-    Xtst <- X[CV[[i]], ]
+    Xtr <- X[-CV[[i]], ] 
+    Xtst <- X[CV[[i]], ] # только те которые реально были нецелевыми в эксперименте
     Ytr <- Y[-CV[[i]]]
     Ytst <- Y[CV[[i]]]
     N0tr <- sum(Ytr == 1)
@@ -54,6 +54,7 @@ eye_train1 <- function(X0, X1, X_test, nfold)
     W[,i] <- obj$W
     
     #calc threshold using all sample
+    # вместо X - X валидационный, часть тренировочной выборки, которая не пойдет в шринкаж. 
     Q <- X %*% W[,i]
     Q0 <- Q[which(Y==1)] #non target
     Q1 <- Q[which(Y==2)] #target
@@ -71,10 +72,11 @@ eye_train1 <- function(X0, X1, X_test, nfold)
     
     th_opt[i] <- ths[idx]
     
+    # FIRST TODO Now for estimating AUC we use whole data set, with Xtr - it's not correct, so here we have to use only test (achived from createFolds) indices
     #optimal operating point of the ROC curve
-    total_Q <- rbind(X_test, X1) %*% W[,i]
-    auc0[i] <- calc_roc_auc(nrow(X1), nrow(X_test), total_Q[-(1:nrow(X_test))], total_Q[1:nrow(X_test)])
-    
+    total_Q <- rbind(X_real_nontarget, X1) %*% W[,i]
+    auc0[i] <- calc_roc_auc(nrow(X1), nrow(X_real_nontarget), total_Q[-(1:nrow(X_real_nontarget))], total_Q[1:nrow(X_real_nontarget)])
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #auc0_old[i] <- calc_roc_auc(N1,N0,Q1,Q0)
     
     #calc acc on train sample
