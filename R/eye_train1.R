@@ -1,5 +1,5 @@
 
-eye_train1 <- function(X0, X1, X_real_nontarget, nfold)
+eye_train1 <- function(X_random, X1, X_real_nontarget, nfold)
 {
   #####################  preallocate  #########################
   W <- matrix(ncol = nfold, nrow = dim(X1)[2] )
@@ -28,24 +28,53 @@ eye_train1 <- function(X0, X1, X_real_nontarget, nfold)
   
   #############################################################
   
-  N0 <-  dim(X0)[1]
+  N0 <-  dim(X_real_nontarget)[1]
   N1 <- dim(X1)[1]
   
-  X <- rbind(X0, X1)
+  X <- rbind(X_real_nontarget, X1)
   Y <- c( rep(1, N0), rep(2, N1) )
   
   CV <- createFolds(Y, nfold)
+  CV_random <- createFolds(X_random, nfold)
   
   #generate random samples for training and testing
   
   for (i in 1:length(CV)) 
   {
     Xtr <- X[-CV[[i]], ] 
-    Xtst <- X[CV[[i]], ] # только те которые реально были нецелевыми в эксперименте
-    Ytr <- Y[-CV[[i]]]
+    
+    #split Xtr to Xtr and Xvalidation
+    
+    specif = c(train = .75, validate = .25)
+    
+    Xtst <- X[CV[[i]], ]
     Ytst <- Y[CV[[i]]]
+    
+    #creating validation sample
+    Ytr <- Y[-CV[[i]]]
+    
+    specif <- c(train = .75, validate = .25)
+    g <- sample(cut(
+      seq(length(Ytr)), 
+      length(Ytr)*cumsum(c(0,specif)),
+      labels = names(specif)
+    ))
+    res_Y <- split(Ytr, g)
+    
+    Ytr <- res_Y$train
+    Yvalid <- res_Y$validate
+    
+    Xvalid <- Xtr[g == 'validate',]
+    Xtr <- Xtr[g == 'train',]
+    
+    
+    Xtr <- rbind(Xtr, X_random[-CV_random[[i]], ])
+    Ytr <- c(Ytr, rep(1, nrow(X_random[-CV_random[[i]], ])))
+    
     N0tr <- sum(Ytr == 1)
     N1tr <- sum(Ytr == 2)
+    N0valid <- sum(Yvalid == 1)
+    N1valid <- sum(Yvalid == 2)
     N0tst <- sum(Ytst == 1)
     N1tst <- sum(Ytst == 2) 
     
@@ -55,9 +84,9 @@ eye_train1 <- function(X0, X1, X_real_nontarget, nfold)
     
     #calc threshold using all sample
     # вместо X - X валидационный, часть тренировочной выборки, которая не пойдет в шринкаж. 
-    Q <- X %*% W[,i]
-    Q0 <- Q[which(Y==1)] #non target
-    Q1 <- Q[which(Y==2)] #target
+    Q <- Xvalid %*% W[,i]
+    Q0 <- Q[which(Yvalid==1)] #non target
+    Q1 <- Q[which(Yvalid==2)] #target
     ths <- Q + .Machine$double.eps
     ths <- sort(ths)
     
@@ -65,19 +94,17 @@ eye_train1 <- function(X0, X1, X_real_nontarget, nfold)
     
     for (k in 1:length(ths))
     {
-      spec_all[k] <- length(which(Q0 > ths[k])) / N0
+      spec_all[k] <- length(which(Q0 > ths[k])) / N0valid
     }
     idx <- which(spec_all >= 0.95)
     idx <- idx[length(idx)]
     
-    th_opt[i] <- ths[idx]
+    if(length(idx) == 0) {
+      idx <- which(spec_all >= 0.9)
+      idx <- idx[length(idx)]
+    }
     
-    # FIRST TODO Now for estimating AUC we use whole data set, with Xtr - it's not correct, so here we have to use only test (achived from createFolds) indices
-    #optimal operating point of the ROC curve
-    total_Q <- rbind(X_real_nontarget, X1) %*% W[,i]
-    auc0[i] <- calc_roc_auc(nrow(X1), nrow(X_real_nontarget), total_Q[-(1:nrow(X_real_nontarget))], total_Q[1:nrow(X_real_nontarget)])
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    #auc0_old[i] <- calc_roc_auc(N1,N0,Q1,Q0)
+    th_opt[i] <- ths[idx]
     
     #calc acc on train sample
     Q <- Xtr %*% W[,i]

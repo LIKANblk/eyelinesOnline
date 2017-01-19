@@ -29,13 +29,13 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
   
   if(random_non_target){
     eventsNT_t <- sort(
-      c(eventsNT_t, ceiling(
+      ceiling(
         seq(
           from = ceiling(actions$Latency[1]*sRate) - left_border,
           to = nrow(signal) - epoch_size,
-          length.out = (length(eventsT_t)-length(eventsNT_t)) * more_non_target
+          length.out = 2500 #length(eventsT_t) * more_non_target
         )
-      ))
+      )
     )
   }
   
