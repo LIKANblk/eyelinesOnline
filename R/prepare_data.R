@@ -47,7 +47,12 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
   
   eventsNT_t <- eventsNT_t[eventsNT_t<=nrow(signal)]
   eventsT_t <- eventsT_t[eventsT_t<=nrow(signal)]
-  test_NT <- test_NT[test_NT<=nrow(signal)]
+  if(!length(test_NT)) {
+    test_NT <- eventsNT_t
+  } else {
+    test_NT <- test_NT[test_NT<=nrow(signal)]
+  }
+  
   
   #   cat("Train epochs: target=", length(eventsT_t), " nontarget=", length(eventsNT_t), "\n")
   
