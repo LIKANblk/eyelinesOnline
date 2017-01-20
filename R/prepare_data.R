@@ -1,4 +1,5 @@
-prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press, random_non_target, ball_only, more_non_target)
+prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press,
+                         random_non_target, ball_only, n_random_nontarget)
 {
   msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*sRate)
   msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*sRate)
@@ -27,13 +28,18 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
   
   test_NT <- eventsNT_t
   
+  if(!n_random_nontarget)
+  {
+    n_random_nontarget = length(eventsT_t)
+  }
+  
   if(random_non_target){
     eventsNT_t <- sort(
       ceiling(
         seq(
           from = ceiling(actions$Latency[1]*sRate) - left_border,
           to = nrow(signal) - epoch_size,
-          length.out = 2500 #length(eventsT_t) * more_non_target
+          length.out = n_random_nontarget #length(eventsT_t) * more_non_target
         )
       )
     )

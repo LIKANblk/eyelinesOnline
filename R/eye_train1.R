@@ -96,13 +96,8 @@ eye_train1 <- function(X_random, X1, X_real_nontarget, nfold)
     {
       spec_all[k] <- length(which(Q0 > ths[k])) / N0valid
     }
-    idx <- which(spec_all >= 0.95)
+    idx <- which(spec_all >= 0.9)
     idx <- idx[length(idx)]
-    
-    if(length(idx) == 0) {
-      idx <- which(spec_all >= 0.9)
-      idx <- idx[length(idx)]
-    }
     
     th_opt[i] <- ths[idx]
     
