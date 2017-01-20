@@ -17,6 +17,7 @@ calc_probability_estimation <- function(folder){
     classifier <- readChar(clf, file.info(clf)$size)
     classifier <- strRep(classifier, '\r', '')
     classifier <- strRep(classifier, 'RA5 <- filter_fast_events(RA4)', 'RA5 <- RA4; createOutput(ev, "IN")')
+    classifier <- strRep(classifier, 'createOutput(RA4,"RES")', 'createOutput(RA4,"RES"); createOutput(ev,"IN")')
     
     data <- readStructurized(filename_r2e)
     result <- run.offline(data$streams, data$blocks, classifier)
