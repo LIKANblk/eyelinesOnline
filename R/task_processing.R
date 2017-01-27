@@ -6,11 +6,11 @@ task_processing <- function(path, type = 'test') {
     
     if( experiment[[i]]$file_data$record_type == 'task_test' && type == 'test') {
       
-      clf_resp <- count_clf_resp_task(experiment[[i]]$events)
+      clf_resp <- count_clf_resp_task(experiment[[i]]$events, load.one.eye(experiment[[i]]$file_data$filename_edf))
       
     } else if (experiment[[i]]$file_data$record_type == 'task_random' && type == 'random') {
       
-      clf_resp <- count_clf_resp_task(experiment[[i]]$events)
+      clf_resp <- count_clf_resp_task(experiment[[i]]$events, load.one.eye(experiment[[i]]$file_data$filename_edf))
       
     }
   }
@@ -18,9 +18,8 @@ task_processing <- function(path, type = 'test') {
   clf_resp
 }
 
-count_clf_resp_task <- function(events) {
+count_clf_resp_task <- function(events, eye) {
   
-  eye <- load.one.eye(experiment[[i]]$file_data$filename_edf)
   
   if( (tail(events$time[which(events$field_type == 'field')], n=1) + 90000) >= events$time[nrow(events)] ) {
     warning(paste0(experiment[[i]]$file_data$filename_edf, ' is too short for a proper analysis!'))
