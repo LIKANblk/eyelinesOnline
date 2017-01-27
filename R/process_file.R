@@ -243,15 +243,15 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
     }
   })
   
-  
   events$dwell_after_click  <- mapply(function(time, x, y){
     first <- which(eyetracking_data$samples$time> time)[[1]]
-    if(first + 10000 <= length(eyetracking_data$samples$x))
+    if((first + 10000) <= nrow(eyetracking_data$samples))
     {
-      (min(
-        which(abs(x - eyetracking_data$samples$x[first + 1:10000]) > file_data$eyelines_settings$fixationBlockRegionSize/2)[[1]], 
-        which(abs(y - eyetracking_data$samples$y[first + 1:10000]) > file_data$eyelines_settings$fixationBlockRegionSize/2)[[1]]
-      ) - 1) * 1000/eyetracking_data$samplingRate 
+      x_es <- which(abs(x - eyetracking_data$samples$x[first + 1:10000]) > file_data$eyelines_settings$fixationBlockRegionSize/2)
+      y_es <- which(abs(y - eyetracking_data$samples$y[first + 1:10000]) > file_data$eyelines_settings$fixationBlockRegionSize/2)
+      if((length(x_es) > 0) && (length(y_es) > 0)){
+        (min( x_es[[1]], y_es[[1]]) - 1) * 1000/eyetracking_data$samplingRate
+      }
     }
   }, events$time, events$fixation_coords_x, events$fixation_coords_y)
   
