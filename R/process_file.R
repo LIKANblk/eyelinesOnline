@@ -279,19 +279,14 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   eeg_data <- list()
   
   exp_name <- as.numeric(str_filter(filename_edf, '.+data/([[:digit:]]+)/')[[1]][2])
-  if(exp_name %in% 23:27) {
-    cond <- 'random'
-  } else {
-    cond <- 'test'
-  }
   
   eye_epochs <- list()
   
   if(!no_eeg && filename_classifier!=''){
-    if((file_data$record_type=='test' || file_data$record_type == cond)){
+    if(file_data$record_type != 'train'){
       eeg_data <- get_classifier_output(filename_r2e, filename_classifier, start_epoch, end_epoch, events$time, events$dwell_time)
       events$classifier_output[events$quick_fixation & events$activation] <- eeg_data$classifier_output$Q[eeg_data$classifier_output$passed] [1:sum(events$quick_fixation & events$activation)]
-    } else if(file_data$record_type=='train') {
+    } else {
       eeg_data <- get_classifier_output_train(filename_r2e, start_epoch, end_epoch, events$time, events$dwell_time, res)
     }
     
@@ -306,7 +301,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   
   events$changed_selection <- FALSE
   
-  if(file_data$record_type == 'test' || file_data$record_type == 'random') {
+  if(file_data$record_type != 'train') {
     #count how many times user changed his decision about ball selection
     changed_selection <- (events$field_type[events$activation == TRUE] == 'ball')
     filtered_idx <- which(c(diff(changed_selection)==0, F) & changed_selection)

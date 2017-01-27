@@ -209,7 +209,7 @@ draw_eeg_epochs_random(experiment, 'true_negative')
 ### False negative epochs
 
 ```{r fig.height=8, fig.width=12}
-draw_eeg_epochs(experiment, 'false_negative')
+draw_eeg_epochs_random(experiment, 'false_negative')
 ```
 
 \pagebreak
