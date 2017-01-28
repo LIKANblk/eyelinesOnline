@@ -9,6 +9,9 @@ generate_files_for_matlab <- function(path) {
       events <- rbind(events, experiment[[i]]$events)
     }
   }
+  
+  events[is.na(events)] <- NaN
+  
   eeg_epochs <- list()
   for ( i in 1:length(experiment)) {
     if(experiment[[i]]$file_data$record_type == 'train') {
