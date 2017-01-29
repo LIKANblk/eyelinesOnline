@@ -251,7 +251,11 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       y_es <- which(abs(y - eyetracking_data$samples$y[first + 1:10000]) > file_data$eyelines_settings$fixationBlockRegionSize/2)
       if((length(x_es) > 0) && (length(y_es) > 0)){
         (min( x_es[[1]], y_es[[1]]) - 1) * 1000/eyetracking_data$samplingRate
+      } else {
+        NA
       }
+    } else {
+      NA
     }
   }, events$time, events$fixation_coords_x, events$fixation_coords_y)
   
