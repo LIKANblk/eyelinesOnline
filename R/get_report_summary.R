@@ -32,10 +32,11 @@ get_report_summary <- function(normal_table, random_table, count_changed_selecti
   
   df <- data.frame(SENS_normal = SENS_normal, SPEC_normal = SPEC_normal, J_normal = J_normal,
                     chngn_normal_rate = sum(normal_table$changed_selection == TRUE & normal_table$quick_fixation == F) / TP_ball_normal * 100,
-                    FP_normal_rate = sum(normal_table$false_alarm == TRUE & normal_table$quick_fixation == F) / TP_ball_normal * 100,
+                    #FP_normal_rate = sum(normal_table$false_alarm == TRUE & normal_table$quick_fixation == F) / TP_ball_normal * 100,
                     SENS_random = SENS_random, SPEC_random = SPEC_random, J_random = J_random,
-                    chngn_random_rate = sum(random_table$changed_selection == TRUE & random_table$quick_fixation == F) / TP_ball_random * 100,
-                    FP_random_rate = sum(random_table$false_alarm == TRUE & random_table$quick_fixation == F) / TP_ball_random * 100)
+                    chngn_random_rate = sum(random_table$changed_selection == TRUE & random_table$quick_fixation == F) / TP_ball_random * 100#,
+                    #FP_random_rate = sum(random_table$false_alarm == TRUE & random_table$quick_fixation == F) / TP_ball_random * 100
+                   )
 
   df
   

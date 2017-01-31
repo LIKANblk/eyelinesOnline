@@ -10,9 +10,6 @@ generate_files_for_matlab <- function(path) {
     }
   }
   
-  #events$dwell_after_click <- sapply(events$dwell_after_click, function(x){ if(is.null(x)){ x <- NaN }})
- # events$dwell_after_click <- NULL
-  
   eeg_epochs <- list()
   for ( i in 1:length(experiment)) {
     if(experiment[[i]]$file_data$record_type == 'train') {

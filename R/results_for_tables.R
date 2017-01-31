@@ -1,4 +1,4 @@
-foo <- function() {
+results_for_tables <- function() {
   
   for (i in 23:27) {
     process_experiment(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/'))
@@ -15,7 +15,7 @@ foo <- function() {
     remove(experiment)
   }
   
-  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/report_summary_no_change.csv", row.names = F)
+  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/report_summary_no_change.csv", row.names = F)
   
   
   ################ TABLE 2 ################ 
@@ -28,7 +28,7 @@ foo <- function() {
     remove(experiment)
   }
   
-  write.table(format(results_clf, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/results_clf.csv", row.names = F)
+  write.table(format(results_clf, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/results_clf.csv", row.names = F)
   
   
   ################ TABLE 3 ################ 
@@ -41,7 +41,7 @@ foo <- function() {
     remove(experiment)
   }
   
-  write.table(format(moves_table, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/moves_table.csv", row.names = F)
+  write.table(format(moves_table, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/moves_table.csv", row.names = F)
   
 }
 
