@@ -1,6 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 import(Resonance)
-import(hybridEyeEEG)
 import(rjson)
 import(pracma)
 import(sperrorest)

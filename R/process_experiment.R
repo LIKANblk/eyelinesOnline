@@ -31,5 +31,6 @@ process_experiment <- function(path, start_epoch = -1000, end_epoch = 1000, chan
     print(json$'files'[[i]]$name_eeg)
   }
   save(experiment = experiment, file = paste0(path, "/experiment.RData"))
+  cat('Processing experiment №', str_filter(path, '.+/([[:digit:]]+)/$')[[1]][2], 'done!\n')
   invisible(experiment)
 }

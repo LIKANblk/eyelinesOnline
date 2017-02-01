@@ -207,8 +207,11 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
         
         ind <- ind[1]+1
         
-        if(types[ind] %in% c("ballSelect", "ballDeselect"))
+        if(types[ind] == "ballSelect")
           return('ball')
+        
+        if(types[ind] == "ballDeselect")
+          return('ball_deselect')
         
         if(types[ind] %in% c('ballMove', 'blockedMove'))
           return('field')
@@ -278,7 +281,7 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   )
   
   unknownField <- events$field_type==''
-  events$field_type[unknownField] <- c('ball', 'field')[is.na(events$ball_color[unknownField])+1]
+  events$field_type[unknownField] <- c('ball_nT', 'field_nT')[is.na(events$ball_color[unknownField])+1]
   events <- events[-events$time<0,]
   
   eeg_data <- list()

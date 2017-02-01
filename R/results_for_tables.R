@@ -1,13 +1,16 @@
-results_for_tables <- function() {
+results_for_tables <- function(experiments_nums) {
   
-  for (i in 23:27) {
-    process_experiment(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/'))
-  }
+  #experiments_nums example results_for_tables(c(29,30,32,33)) or results_for_tables(23:27)
+  
+  # for (i in c(23:27, 29, 30, 32:35)) {
+  #   process_experiment(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/'))
+  #   generate_files_for_matlab(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
+  # }
   
   ################ TABLE 1  ################ 
   
   report_summary <- data.frame()
-  for (i in 23:27) {
+  for (i in experiments_nums) {
     load(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
     l <- bar(experiment)
     report_summary <- rbind(report_summary, get_report_summary(l$normal_table, l$random_table, FALSE))
@@ -15,12 +18,13 @@ results_for_tables <- function() {
     remove(experiment)
   }
   
-  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/report_summary_no_change.csv", row.names = F)
+  report_summary$exp_name <- experiments_nums
+  write.table(format(report_summary, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/report_summary_no_change.csv", row.names = F)
   
   
   ################ TABLE 2 ################ 
   results_clf <- data.frame()
-  for (i in 23:27) {
+  for (i in experiments_nums) {
     load(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
     l <- bar(experiment)
     results_clf <- rbind(results_clf, prepare_results_clf(l$normal_table, l$random_table, l$n_test, l$n_random))
@@ -28,20 +32,33 @@ results_for_tables <- function() {
     remove(experiment)
   }
   
-  write.table(format(results_clf, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/results_clf.csv", row.names = F)
+  results_clf$exp_name <- experiments_nums
+  write.table(format(results_clf, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/results_clf.csv", row.names = F)
   
   
   ################ TABLE 3 ################ 
   moves_table <- data.frame()
-  for (i in 23:27) {
+  n_fixes <- c()
+  for (i in experiments_nums) {
     load(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
     l <- bar(experiment)
     moves_table <- rbind(moves_table, moves_table(l$normal_table, l$random_table, l$n_test, l$n_random))
+    n_fixes_in_train <- 0
     
+    for(i in 1:length(experiment)){
+      if(experiment[[i]]$file_data$record_type == 'train'){
+        n_fixes_in_train <- n_fixes_in_train + nrow(experiment[[i]]$events[
+          (experiment[[i]]$events$field_type == 'ball' | experiment[[i]]$events$field_type == 'field') &
+            experiment[[i]]$events$impossible_move == F,])
+      }
+    }
+    n_fixes <- c(n_fixes, n_fixes_in_train)
     remove(experiment)
   }
   
-  write.table(format(moves_table, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/new/moves_table.csv", row.names = F)
+  moves_table$exp_name <- experiments_nums
+  moves_table$n_target_fixes_train <- n_fixes
+  write.table(format(moves_table, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/moves_table.csv", row.names = F)
   
 }
 
@@ -55,7 +72,7 @@ bar <- function(experiment) {
   
   n_train <- 0
   N_fixes <- 0
-
+  
   for ( i in 1:length(experiment)) {
     if(experiment[[i]]$file_data$record_type == 'test') {
       normal_table <- rbind(normal_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball', ])

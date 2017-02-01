@@ -36,6 +36,10 @@ generate_files_for_matlab <- function(path) {
   eye_epochs <- simplify2array(eye_epochs)
   
   writeMat(con = paste0(folder, "eye_epochs.mat"), eye_epochs = eye_epochs)
+  cat('Matlab EYE epochs for experiment', str_filter(folder, '.+/([[:digit:]]+)/$')[[1]][2], 'done...\n')
   writeMat(con = paste0(folder, "eeg_epochs.mat"), eeg_epochs = eeg_epochs)
+  cat('Matlab EEG epochs for experiment', str_filter(folder, '.+/([[:digit:]]+)/$')[[1]][2], 'done...\n')
   writeMat(con = paste0(folder, "events.mat"), events = events)
+  cat('Matlab EVENTS for experiment', str_filter(folder, '.+/([[:digit:]]+)/$')[[1]][2], 'done...\n')
+  
 }

@@ -1,12 +1,11 @@
 prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press,
                          random_non_target, ball_only, n_random_nontarget)
 {
-  msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="msgbuttonPressed"),1]*sRate)
-  msgballChosen_t <- ceiling(actions[which(actions$Type=="msgballChosen"),1]*sRate)
-  msgBallMoved_t <- ceiling(actions[which(actions$Type=="msgBallMoved"),1]*sRate)
-  msgClickedInBlockMode_t <- ceiling(actions[which(actions$Type=="msgClickedInBlockMode"),1]*sRate)
-  msgBallClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBallClickedInBlockedMode"),1]*sRate)
-  msgBoardClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="msgBoardClickedInBlockedMode"),1]*sRate)
+  msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="ClickedToUnlock"),1]*sRate)
+  msgballChosen_t <- ceiling(actions[which(actions$Type=="ballSelect"),1]*sRate)
+  msgBallMoved_t <- ceiling(actions[which(actions$Type=="ballMove"),1]*sRate)
+  msgBallClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="BallClickedInBlockedMode"),1]*sRate)
+  msgBoardClickedInBlockedMode_t <- ceiling(actions[which(actions$Type=="BoardClickedInBlockedMode"),1]*sRate)
   
   epoch_size <- round(((epoch_size - left_border)/1000) * sRate)
   if(no_button_press) {
