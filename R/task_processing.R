@@ -31,7 +31,7 @@ count_clf_resp_task <- function(events, eye, filename, field_type) {
   }
   
   events_sequence_task <- events[1:which(events$time == tail(events$time[which(events$field_type == 'field')], n=1)) ,]
-  events_sequence_task <- events_sequence_task[events_sequence_task$field_type == field_type, ]
+  events_sequence_task <- events_sequence_task[events_sequence_task$field_type == field_type | events_sequence_task$field_type == paste0(field_type, 'nT'), ]
   
   events_remember_task <- events[which(events$time > eye$samples$time[length(eye$samples$time)] - 90000)[1]:nrow(events),]
   

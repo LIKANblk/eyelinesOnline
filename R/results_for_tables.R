@@ -13,7 +13,7 @@ results_for_tables <- function(experiments_nums) {
   for (i in experiments_nums) {
     load(paste0('~/Yandex.Disk/eyelinesOnlineNew/data/', i, '/experiment.RData'))
     l <- bar(experiment)
-    report_summary <- rbind(report_summary, get_report_summary(l$normal_table, l$random_table, FALSE))
+    report_summary <- rbind(report_summary, get_report_summary(l$normal_table, l$random_table, FALSE, no_false_alarms = T))
     
     remove(experiment)
   }
@@ -75,13 +75,13 @@ bar <- function(experiment) {
   
   for ( i in 1:length(experiment)) {
     if(experiment[[i]]$file_data$record_type == 'test') {
-      normal_table <- rbind(normal_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball', ])
+      normal_table <- rbind(normal_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball' || experiment[[i]]$events$field_type == 'ball_nT', ])
       n_test <- n_test + 1
     } else if (experiment[[i]]$file_data$record_type == 'random'){
-      random_table <- rbind(random_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball', ])
+      random_table <- rbind(random_table, experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball' || experiment[[i]]$events$field_type == 'ball_nT', ])
       n_random <- n_random + 1
     } else if (experiment[[i]]$file_data$record_type == 'train') {
-      N_fixes <- N_fixes + nrow(experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball',])
+      N_fixes <- N_fixes + nrow(experiment[[i]]$events[experiment[[i]]$events$field_type == 'ball' || experiment[[i]]$events$field_type == 'ball_nT',])
       n_train <- n_train + 1
     }
   }

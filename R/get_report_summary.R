@@ -1,10 +1,12 @@
-get_report_summary <- function(normal_table, random_table, count_changed_selection = T) {
+get_report_summary <- function(normal_table, random_table, count_changed_selection = T, no_false_alarms = F) {
   
   
   TP_ball_normal <- sum(normal_table$quick_fixation == T & normal_table$activation == T & normal_table$changed_selection == F & normal_table$false_alarm == F)
   TN_ball_normal <-sum(normal_table$quick_fixation == T & normal_table$activation == F  & normal_table$changed_selection == F  & normal_table$false_alarm == F)
   if(count_changed_selection) {
     FP_ball_normal <-sum((normal_table$false_alarm == T | normal_table$changed_selection == T ) & normal_table$quick_fixation == T)
+  } else if(no_false_alarms) {
+    FP_ball_normal <-sum(normal_table$changed_selection == T & normal_table$quick_fixation == T)
   } else {
     FP_ball_normal <-sum(normal_table$false_alarm == T  & normal_table$quick_fixation == T)
   }
@@ -21,6 +23,8 @@ get_report_summary <- function(normal_table, random_table, count_changed_selecti
   TN_ball_random <- sum(random_table$quick_fixation == T & random_table$activation == F & random_table$changed_selection == F & random_table$false_alarm == F)
   if(count_changed_selection) {
     FP_ball_random <- sum((random_table$false_alarm == T | random_table$changed_selection == T ) & random_table$quick_fixation == T)
+  } else if(no_false_alarms) {
+    FP_ball_random <-sum(random_table$changed_selection == T & random_table$quick_fixation == T)
   } else {
     FP_ball_random <- sum(random_table$false_alarm == T  & random_table$quick_fixation == T)
   }
