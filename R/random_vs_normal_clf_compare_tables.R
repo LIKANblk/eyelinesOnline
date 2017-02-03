@@ -1,4 +1,4 @@
-randov_vs_normal_clf_compare_tables <- function(exp_nums){
+random_vs_normal_clf_compare_tables <- function(exp_nums){
   df_random_ball <- data.frame()
   df_test_ball <- data.frame()
   df_random_field <- data.frame()

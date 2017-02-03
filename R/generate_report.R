@@ -21,6 +21,12 @@ generate_report <- function(number, folder=NULL){
       params = list(path = file.path(folder, 'data', sprintf('%02i', as.numeric(number)), 'experiment.RData')), 
       output_file = file.path(folder, sprintf('report%02i.pdf', as.numeric(number)))
     )
+  } else if (as.numeric(number) >= 29) {
+    rmarkdown::render(
+      system.file("templates", 'eyelinesReport_with_task.Rmd', package="eyelinesOnline"), 
+      params = list(path = file.path(folder, 'data', sprintf('%02i', as.numeric(number)), 'experiment.RData')), 
+      output_file = file.path(folder, sprintf('report%02i.pdf', as.numeric(number)))
+    )
   } else {
     rmarkdown::render(
       system.file("templates", 'eyelinesReport.Rmd', package="eyelinesOnline"), 
@@ -28,5 +34,5 @@ generate_report <- function(number, folder=NULL){
       output_file = file.path(folder, sprintf('report%02i.pdf', as.numeric(number)))
     )
   }
- 
+  
 }

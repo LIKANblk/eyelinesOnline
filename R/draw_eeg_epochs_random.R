@@ -95,32 +95,33 @@ draw_eeg_epochs_random <- function(experiment, clf_response=c('true_positive', '
                              " cell epochs")
   
   
-  
-  p1 <- ggplot(df_for_plot_normal, aes(x=t, y=value)) +
-    geom_line(aes(colour = type)) +
-    ylim(-25, 25) +
-    ylab("") +
-    xlab("") +
-    facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
-    geom_vline(xintercept = 0, colour="seagreen4") +
-    theme(legend.position="none", plot.title = element_text(size=12)) +
-    ggtitle(normal_clf_title) +
-    scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
-  
-  p2 <- ggplot(df_for_plot_random, aes(x=t, y=value)) +
-    geom_line(aes(colour = type)) +
-    ylim(-25, 25) +
-    ylab("") +
-    xlab("") +
-    facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
-    geom_vline(xintercept = 0, colour="seagreen4") +
-    theme(plot.title = element_text(size=12),
-          legend.title=element_blank(),
-          legend.justification=c(1,0), legend.position=c(0.6,0)) +
-    ggtitle(random_clf_title) +
-    scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
-  
-  
-  multiplot(p1, p2, cols=2)
+  if(nrow(df_for_plot_normal)>1 & nrow(df_for_plot_random)>1){
+    p1 <- ggplot(df_for_plot_normal, aes(x=t, y=value)) +
+      geom_line(aes(colour = type)) +
+      ylim(-25, 25) +
+      ylab("") +
+      xlab("") +
+      facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
+      geom_vline(xintercept = 0, colour="seagreen4") +
+      theme(legend.position="none", plot.title = element_text(size=12)) +
+      ggtitle(normal_clf_title) +
+      scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
+    
+    p2 <- ggplot(df_for_plot_random, aes(x=t, y=value)) +
+      geom_line(aes(colour = type)) +
+      ylim(-25, 25) +
+      ylab("") +
+      xlab("") +
+      facet_wrap( ~ channel, labeller = to_string, ncol = 4) +
+      geom_vline(xintercept = 0, colour="seagreen4") +
+      theme(plot.title = element_text(size=12),
+            legend.title=element_blank(),
+            legend.justification=c(1,0), legend.position=c(0.6,0)) +
+      ggtitle(random_clf_title) +
+      scale_color_manual(labels=c("Cell", "Ball"), values = c("cyan4", "firebrick2"))
+    
+    
+    multiplot(p1, p2, cols=2)
+  }
   
 }

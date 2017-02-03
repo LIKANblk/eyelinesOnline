@@ -1,0 +1,214 @@
+---
+title: "Experiment Report"
+author: "BCI Lab"
+output: pdf_document
+params:
+  path: character
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(eyelinesOnline)
+library(knitr)
+load(params$path)
+```
+
+## Experiment path
+```{r, echo=FALSE}
+my_path <- paste0(str_filter(experiment[[1]]$file_data$filename_edf, '(^.+/[[:digit:]]+)/[[:digit:]]+.edf')[[1]][2], '/')
+cat(my_path)
+
+experiment_date <- paste0('Experiment date: ', experiment[[1]]$file_data$date)
+report_date <- paste0('Report date: ', format(Sys.Date(), format="%d.%m.%Y"))
+cat(paste0(experiment_date, '\n', report_date))
+```
+
+## Average scores
+```{r, echo=FALSE}
+cat(paste0('Scores = ', format(mean(
+  sapply(
+    Filter(
+      function(x) x$file_data$score && x$file_data$record_type %in% c('train','test') ,
+      experiment
+    ),
+    function(x) x$file_data$score
+  )
+), digits = 2)))
+```
+
+## Classifier parameters
+```{r, echo=FALSE}
+filename <- file.path(dirname(params$path), 'dump.txt')
+eval(parse(text = paste0(readLines(filename, warn = F), collapse = '\n')))
+
+cat(sprintf('Target epochs:    %i
+Nontarget epochs: %i
+
+Specifity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Sensivity:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+Accuracy:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+AUC:
+   Train: %.3f ± %.3f
+   Test:  %.3f ± %.3f
+   All:   %.3f ± %.3f
+
+',
+res$target_epochs, res$nontarget_epochs,
+res$quality$spec$tr[1],  res$quality$spec$tr[2],
+res$quality$spec$tst[1], res$quality$spec$tst[2],
+
+res$quality$sens$tr[1],  res$quality$sens$tr[2],
+res$quality$sens$tst[1], res$quality$sens$tst[2],
+
+res$quality$acc$tr[1],  res$quality$acc$tr[2],
+res$quality$acc$tst[1], res$quality$acc$tst[2],
+
+res$quality$auc$tr[1],  res$quality$auc$tr[2],
+res$quality$auc$tst[1], res$quality$auc$tst[2],
+res$quality$auc$all[1], res$quality$auc$all[2]))
+
+```
+
+```{r, include=FALSE}
+events <- data.frame()
+for ( i in 1:length(experiment)) {
+  if(experiment[[i]]$file_data$record_type == 'test') {
+    events <- rbind(events, experiment[[i]]$events)
+  }
+}
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT') & events$changed_selection == F))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT')  & events$changed_selection == F))
+FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T) & 
+                          (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$quick_fixation == TRUE))
+FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & 
+                         (events$field_type == 'field' | events$field_type == 'field_nT') & events$quick_fixation == TRUE))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT') & events$changed_selection == F))
+
+
+df_for_table <- data.frame(type = c('ball', 'cell'),
+                           TP = c(TP_ball, TP_cell),
+                           TN = c(TN_ball, TN_cell),
+                           FP = c(FP_ball, FP_cell),
+                           FN = c(FN_ball, FN_cell),
+                           INTENT = c(TP_ball + FN_ball, TP_cell + FN_cell),
+                           SPONT = c(TN_ball + FP_ball, TN_cell + FP_cell),
+                           SENS = c((TP_ball / (TP_ball + FN_ball)), (TP_cell / (TP_cell + FN_cell))),
+                           SPEC = c((1 - (FP_ball / (TN_ball + FP_ball))), (1 - (FP_cell / (TN_cell + FP_cell)))))
+```
+
+## Classifier Response table
+
+``` {r, echo=FALSE}
+kable(df_for_table, format = 'markdown', align = 'l', digits = 3, padding = 4)
+remove(df_for_table)
+```
+
+```{r, include=FALSE}
+events <- data.frame()
+for ( i in 1:length(experiment)) {
+  if(experiment[[i]]$file_data$record_type == 'random') {
+    events <- rbind(events, experiment[[i]]$events)
+  }
+}
+if(length(events)){
+TP_ball <- length(which(events$quick_fixation == T & events$activation == T 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+TP_cell <- length(which(events$quick_fixation == T & events$activation == T 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT') & events$changed_selection == F))
+TN_ball <- length(which(events$quick_fixation == T & events$activation == F 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+TN_cell <- length(which(events$quick_fixation == T & events$activation == F 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT')  & events$changed_selection == F))
+FP_ball <- length(which((events$false_alarm == T | events$changed_selection == T) & 
+                          (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$quick_fixation == TRUE))
+FP_cell <- length(which((events$false_alarm == T | events$changed_selection == T) & 
+                         (events$field_type == 'field' | events$field_type == 'field_nT') & events$quick_fixation == TRUE))
+FN_ball <- length(which(events$quick_fixation == F & events$activation == T 
+                        & (events$field_type == 'ball' |  events$field_type == 'ball_nT') & events$changed_selection == F))
+FN_cell <- length(which(events$quick_fixation == F & events$activation == T 
+                        & (events$field_type == 'field' | events$field_type == 'field_nT') & events$changed_selection == F))
+
+
+df_for_table <- data.frame(type = c('ball', 'cell'),
+                           TP = c(TP_ball, TP_cell),
+                           TN = c(TN_ball, TN_cell),
+                           FP = c(FP_ball, FP_cell),
+                           FN = c(FN_ball, FN_cell),
+                           INTENT = c(TP_ball + FN_ball, TP_cell + FN_cell),
+                           SPONT = c(TN_ball + FP_ball, TN_cell + FP_cell),
+                           SENS = c((TP_ball / (TP_ball + FN_ball)), (TP_cell / (TP_cell + FN_cell))),
+                           SPEC = c((1 - (FP_ball / (TN_ball + FP_ball))), (1 - (FP_cell / (TN_cell + FP_cell)))))
+}
+```
+
+
+## Random Response table
+
+``` {r, echo=FALSE}
+if(exists('df_for_table')){
+  kable(df_for_table, format = 'markdown', align = 'l', digits = 3, padding = 4)
+} else {
+  cat('No records with random classifier were made')
+}
+```
+
+\pagebreak
+
+## EEG Epochs
+
+### True positive epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs_random(experiment, 'true_positive')
+```
+
+\pagebreak
+
+### True negative epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs_random(experiment, 'true_negative')
+```
+
+\pagebreak
+
+### False negative epochs
+
+```{r fig.height=8, fig.width=12}
+draw_eeg_epochs_random(experiment, 'false_negative')
+```
+
+\pagebreak
+
+## Eye speed epochs
+
+```{r fig.height=9, fig.width=12}
+draw_eye_epochs(experiment)
+```
+
+\pagebreak
+
+
+```{r include=FALSE}
+remove(experiment)
+remove(res)
+remove(my_path)
+remove(experiment_date)
+remove(report_date)
+```
+

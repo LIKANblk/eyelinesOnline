@@ -17,7 +17,14 @@ Imports:
     caret,
     pROC,
     reshape2,
-    rmarkdown
+    rmarkdown,
+    stringr,
+    abind,
+    eyelinkReader,
+    ggplot2,
+    gridExtra,
+    rjson,
+    bcidat
 Depends:
     Resonance,
     rjson,
@@ -27,4 +34,11 @@ Depends:
     caret,
     pROC,
     reshape2,
-    rmarkdown
+    rmarkdown,
+    stringr,
+    abind,
+    eyelinkReader,
+    ggplot2,
+    gridExtra,
+    rjson,
+    bcidat

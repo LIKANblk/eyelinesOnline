@@ -33,7 +33,7 @@ results_for_tables <- function(experiments_nums) {
   }
   
   results_clf$exp_name <- experiments_nums
-  write.table(format(results_clf, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/results_clf.csv", row.names = F)
+  write.table(results_clf, file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/results_clf.csv", row.names = F)
   
   
   ################ TABLE 3 ################ 
@@ -57,8 +57,8 @@ results_for_tables <- function(experiments_nums) {
   }
   
   moves_table$exp_name <- experiments_nums
-  moves_table$n_target_fixes_train <- n_fixes
-  write.table(format(moves_table, digits = 2), file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/moves_table.csv", row.names = F)
+  #moves_table$n_target_fixes_train <- n_fixes
+  write.table(moves_table, file="/home/mayenok/Yandex.Disk/eyelinesOnlineNew/tables/moves_table.csv", row.names = F)
   
 }
 
