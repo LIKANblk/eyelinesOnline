@@ -36,7 +36,12 @@ load_eye_data <- function(path, epoch_size, left_border,
       
       
       l <- prepare.data(signal, actions, epoch_size, sRate, left_border, no_button_press,
-                        random_non_target, ball_only, n_random_nontarget)
+                        random_non_target, ball_only, n_random_nontarget, 
+                        list(
+                          edf = paste0(path, json$'files'[[i]]$name_edf),
+                          r2e = paste0(path, json$'files'[[i]]$name_eeg)
+                        )
+                        )
       
       eegT <- abind(eegT, l$eegT)
       eegNT <- abind(eegNT, l$eegNT)

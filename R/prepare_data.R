@@ -1,5 +1,5 @@
 prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_button_press,
-                         random_non_target, ball_only, n_random_nontarget)
+                         random_non_target, ball_only, n_random_nontarget, files_info)
 {
   msgbuttonPressed_t <- ceiling(actions[which(actions$Type=="ClickedToUnlock"),1]*sRate)
   msgballChosen_t <- ceiling(actions[which(actions$Type=="ballSelect"),1]*sRate)
@@ -23,6 +23,17 @@ prepare.data <- function(signal, actions, epoch_size, sRate, left_border, no_but
     eventsNT_t <- c(msgBallClickedInBlockedMode_t)
   } else {
     eventsNT_t <- c(msgBallClickedInBlockedMode_t, msgBoardClickedInBlockedMode_t)
+  }
+  
+  if(length(eventsNT_t)==0)
+  {
+    # save the day
+    tmp <- process_file(filename_edf=files_info$edf, filename_r2e=files_info$r2e, file_data=list(record_type='train'), filename_classifier='', start_epoch=0,
+                 end_epoch=0, no_eeg=TRUE, res=NULL)
+    
+    eventsNT_t <- ceiling(((tmp$events$time - tmp$events$dwell_time)/1000*sRate)[tmp$events$field_type=='ball_nT'])
+    
+    rm(tmp)
   }
   
   test_NT <- eventsNT_t
