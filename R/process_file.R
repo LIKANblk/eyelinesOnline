@@ -24,9 +24,11 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
   file_data$eyelines_settings <- read_all_eyelines_parameters(eyetracking_messages)
   file_data$score <- as.numeric(str_filter(eyetracking_messages, 'score\":([[:digit:]]+)')[[1]][2])
   
-  if ( file_data$eyelines_settings$blockButtonX == 1290 ){
+  #if ( file_data$eyelines_settings$blockButtonX == 1290 ){  #Older button position
+  if ( file_data$eyelines_settings$blockButtonX >= 1260 ){
     file_data$button_position <- "right"
-  } else if( file_data$eyelines_settings$blockButtonX == 550 ) {
+  #} else if( file_data$eyelines_settings$blockButtonX == 550 ) { #Older button position
+  } else if( file_data$eyelines_settings$blockButtonX <= 565 ) {
     file_data$button_position <- "left"
   } else {
     stop('Undefined button position!')
@@ -198,10 +200,10 @@ process_file <- function(filename_edf, filename_r2e, file_data, filename_classif
       if(types[1] == 'BoardClickedInBlockedMode')
         return('field')
       
-      if(length(types)>=2){
+      if(length(types)>2){
         
         ind <- which(types=="BoardPositionClicked")
-        if(length(ind)==0) {
+        if((length(ind)==0) && !(X[2] == Inf)) {
           stop('Strange move sequence')
         } 
         
