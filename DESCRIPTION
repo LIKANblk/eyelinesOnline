@@ -41,4 +41,5 @@ Depends:
     ggplot2,
     gridExtra,
     rjson,
-    bcidat
+    bcidat,
+    CDFt

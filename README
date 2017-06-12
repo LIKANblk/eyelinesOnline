@@ -1,0 +1,33 @@
+Extrenal dependencies, which we doesn't have in CRAN
+https://github.com/tz-lom/Resonance-Rproj
+https://github.com/tz-lom/Resonance.R3
+https://github.com/tz-lom/ResonanceEngine
+
+https://github.com/tz-lom/bcidat
+https://github.com/tz-lom/eyelinkReader
+https://github.com/mayenok/hybridEyeEEG
+
+
+Execute inside R console 
+
+install.packages('devtools') # полезная штука особенно в Рстудии
+require(devtools)
+install_github('tz-lom/Resonance.R3')
+install_github('tz-lom/ResonanceEngine')
+#install_github('tz-lom/Resonance-Rproj')
+
+
+install_github('tz-lom/bcidat')
+install_github('tz-lom/eyelinkReader')
+install_github('mayenok/hybridEyeEEG')
+    
+Switch to some temporary directory and run from system console (or download archive from github)
+git clone https://github.com/tz-lom/Resonance-Rproj
+Open Resonance-Rproj project in Rstudio (open Rproj file inside this dir)
+and then Build -> Build and Reload and then install Resonance-Rproj package
+running in Rstudio console 
+install('./') (devtools have to be loaded)
+
+
+Open eyelinesOnline project in Rstudio and run in RStudio console
+install('./',dependencies = TRUE)
