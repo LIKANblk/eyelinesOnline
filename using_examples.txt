@@ -1,0 +1,131 @@
+mansion/
+
+
+
+----
+
+Nastya Fedorovamayenok@gmail.com
+03.02.2017 17:43
+
+
+Чтобы построить all_tables я использовала функцию results_for_tables(тут номера экспериментов) из пакета eyelinesOnline, пример:
+
+ results_for_tables(c(29,30,32,33,34,35,36,37,38))
+
+эта функция сохраняет на яндекс-диск в папку eyelinesOnlineNew/tables три файла:
+
+moves_table.csv - Таблица с данными по фиксациям в разных частях эксперимента
+report_summary_no_change.csv - Таблица с выходом классификатора
+results_clf.csv - Таблица с сырыми результатами классификации
+
+Чтобы сделать summary_new_task, я запускаю randov_vs_normal_clf_compare_tables(тут номера экспериментов). Эта функция тоже сохраняет csv в папку eyelinesOnlineNew/tables 4 файла:
+df_test_ball
+df_test_field
+df_random_ball
+df_random_field
+там таблицы, где ячейки с суффиксом, соответствующим типу задания - rem - remembering task (задание на запоминание), seq - sequence task (задание на выкладывание последовательности)
+
+
+перезапуск демона ядиска можно сделать через ssh, нужно зайти с логином root (пароль gentoo) и выполнить 
+/etc/init.d/supervisord restart
+
+
+----
+
+Nastya Fedorovamayenok@gmail.com
+9 фев в 19:57
+
+
+Чтобы сгенерировать mat файлы, сначала нужно, чтобы в папке был файл experiment.RData, он делается с помощью функции process_experiment('path')
+
+После этого нужно запустить функцию generate_files_for_matlab('path').  Она достаточно долго работает (около 3 минут на один эксперимент).
+
+- нужно писать путь к файлу experiment.RData, пример:
+
+generate_files_for_matlab('~/Yandex.Disk/eyelinesOnlineNew/data/28/experiment.RData')
+
+
+----
+
+
+31.01.2017, 15:39, "Nastya Fedorova" <mayenok@gmail.com>:
+
+Добрый день!
+
+Юра сделал учетную запись на сервер для Алексея. В будущих экспериментах просьба пользоваться новой учетной записью, а не моей.
+
+логин: alexey 
+пароль: Eex7Biba
+
+перед запуском скриптов пересобрать пакет
+
+library(eyelinesOnline)
+
+
+Потом запускайте как обычно:
+
+buildClassifier("/home/alexey/Yandex.Disk/eyelinesOnlineNew/data/33/", no_button_press = T, random_non_target = T, ball_only = F, n_random_nontarget = FALSE)
+
+и
+
+calc_probability_estimation("/home/alexey/Yandex.Disk/eyelinesOnlineNew/data/34/")
+
+С уважением,
+
+Анастасия Федорова
+
+8(909)-161-75-63
+mayenok.com
+
+
+
+---------
+
+четы о прошедших экспериментах
+Nastya Fedorova
+mayenok@gmail.com
+сегодня в 15:26
+Вам:
+
+sergshishkin@yandex.ru
+1. я вчера делала таблицы для проверки
+2. тут ошибка в слове random
+> randov_vs_normal_clf_compare_tables(c(29,30,32,33,34,35,36,37,38))
+Error: could not find function "randov_vs_normal_clf_compare_tables"
+
+3. 29 это тот, который Алексей сказал что слишком короткое время запоминания было. В предыдущей таблице я его отдельно обрабатывала вручную, так как он не подходит под паттерн обработки записи (я вроде говорила об этом)
+
+С уважением,
+
+Анастасия Федорова
+
+8(909)-161-75-63
+mayenok.com
+
+Sergei Shishkin<sergshishkin@yandex.ru>10 фев. в 15:13 GMT+03:00
+Настя, еще несколько вопросов:
+ 
+ 
+(1) я нашел таблицы, датированные сегодняшним числом - это, наверное, вы сделали? там все должно быть уже в порядке? (я их пока положил в папку tables\tables_before_10.02.17 , вместе со старыми таблицами, собранными вручную)
+ 
+ 
+(2) но сам я смог обычным образом запустить только results_for_tables, а randov_vs_normal_clf_compare_tables почему-то не нашелся:
+ 
+> randov_vs_normal_clf_compare_tables(c(29,30,32,33,34,35,36,37,38))
+Error: could not find function "randov_vs_normal_clf_compare_tables"
+ 
+- но почему-то запустился таким способом:
+ 
+> eyelinesOnline::random_vs_normal_clf_compare_tables(c(29,30,32,33,34,35,36,37,38))
+Warning messages:
+1: In count_clf_resp_task(experiment[[i]]$events, load.one.eye(experiment[[i]]$file_data$filename_edf), :
+ /home/yandex-disk/Yandex.Disk/eyelinesOnlineNew/data/29/24754377.edf is too short for a proper analysis!
+2: In count_clf_resp_task(experiment[[i]]$events, load.one.eye(experiment[[i]]$file_data$filename_edf), :
+ /home/yandex-disk/Yandex.Disk/eyelinesOnlineNew/data/29/24754377.edf is too short for a proper analysis!
+ 
+отчего это может быть?
+ 
+ 
+(3) Warning messages означает, что соответствующая запись не обсчитывалась? как это могло повлиять на итоговые результаты - просто считается, что этой записи не было? но у вас в экселевской таблице по этому эксперименту были соответствующие данные ("task_test" - это, видимо, Настоящий классификатор и два задания, на раскладывание шаров и на запоминание)...
+
+
